@@ -1,0 +1,24 @@
+{
+  "name": "ramda-extras",
+  "version": "0.0.1",
+  "description": "some few functions I feel was missing in ramda and some aliases for functions that colide with coffeescript",
+  "main": "lib/ramda-extras.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/Cottin/ramda-extras.git"
+  },
+  "keywords": [
+    "ramdajs"
+  ],
+  "author": "Victor Cottin <victor@cottin.se> (http://www.cottin.se/)",
+  "license": "MIT",
+  "devDependencies": {
+    "coffee-script": "^1.9.1"
+  },
+  "dependencies": {
+    "ramda": "^0.13.0"
+  }
+}
