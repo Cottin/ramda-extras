@@ -40,7 +40,7 @@ concatMany = (lists...) -> reduce concat, [], lists
 mapcat = compose flatten, map
 
 capitalize = _.capitalize
-toString = (a) -> a+''
+toStr = (a) -> a+''
 
 
 
@@ -55,7 +55,7 @@ assoc_ = curry (k, v, x) ->
 	return y
 
 
-module.exports = {install, isa, dropLast, getPath, cc, ccp, doit, isEmptyObj, callback, indirect, mergeMany, assoc_, mapcat, capitalize, toString}
+module.exports = {install, isa, dropLast, getPath, cc, ccp, doit, isEmptyObj, callback, indirect, mergeMany, assoc_, mapcat, capitalize, toStr}
 
 
 # deprecation line ----
