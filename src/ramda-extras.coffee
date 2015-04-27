@@ -1,16 +1,9 @@
 R = require 'ramda'
-inspect = require 'util-inspect'
-
-{curry, forEach, concat, I, compose, composeP, reduce, map, chain, length, filter, indexOf, flatten, join, slice, eqDeep, get, has, keys, merge, assoc, all, match, replace, path, functions} = R #auto_require:funp
+lo = require 'lodash'
+{curry, concat, I, compose, composeP, reduce, map, chain, length, filter, flatten, slice, eqDeep, get, has, merge, assoc, all, path, functions} = R #auto_require:funp
 
 # is is a keyword in coffee, so we indroduce isa as an alias instead
 isa = R.is
-
-# (a -> [b]) -> [a] -> [b]		Like chain but filters away any items that isNil
-chainNil = curry (f, xs) ->
-	res = chain f, xs
-	return filter R.not(isNil), res
-#chainNil I, [1, null, 2] # returns [1, 2]
 
 dropLast = curry (n, xs) -> slice 0, xs.length - n, xs
 
@@ -46,6 +39,11 @@ concatMany = (lists...) -> reduce concat, [], lists
 # :: f -> [a] -> [a]    # returns the result of applying concat to the result of applying map to f and [a]
 mapcat = compose flatten, map
 
+capitalize = _.capitalize
+toString = (a) -> a+''
+
+
+
 # ----------------------------------------------------------------------------------------------------------
 # Un-pure stuff
 # ----------------------------------------------------------------------------------------------------------
@@ -56,32 +54,13 @@ assoc_ = curry (k, v, x) ->
 	y[k] = v
 	return y
 
-install = (o, target) ->
-	forEach ( (k) -> target[k] = o[k] ), keys o
 
-log = (args...) -> console.log args...
-
-sify = inspect
-
-# http://stackoverflow.com/q/1007981/416797
-STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/g
-ARGUMENT_NAMES = /([^\s,]+)/g
-
-# f -> [s]	 Returns an array of the name of the parameters of a function
-getParamNames = (f) ->
-	fnStr = f.toString().replace(STRIP_COMMENTS, "")
-	result = fnStr.slice(fnStr.indexOf("(") + 1, fnStr.indexOf(")")).match(ARGUMENT_NAMES)
-	result = []	if result is null
-	return result
-# getParamNames (a, b, c) -> 1 # returns [a, b, c]
-
-# Wraps a function f in wrappedF while keeping the signature of f.
-# Returns a function outerWrapperF with the same signature as f and which calls wrapperF with f as first
-# argument and the params passed to outerWrapperF as the following arguments
-wrapKeepSignature = (f, wrapperF) ->
-	params = getParamNames f
-	paramsJoined = params.join(', ')
-	outerWrapperF = eval("( function(#{paramsJoined}) { return wrapperF(f, #{paramsJoined}); }; )")
+module.exports = {install, isa, dropLast, getPath, cc, ccp, doit, isEmptyObj, callback, indirect, mergeMany, assoc_, mapcat, capitalize, toString}
 
 
-module.exports = {install, isa, chainNil, dropLast, getPath, cc, ccp, doit, isEmptyObj, sify, getParamNames, callback, indirect, mergeMany, assoc_, mapcat}
+# deprecation line ----
+# (a -> [b]) -> [a] -> [b]		Like chain but filters away any items that isNil
+# chainNil = curry (f, xs) ->
+# 	res = chain f, xs
+# 	return filter R.not(isNil), res
+# #chainNil I, [1, null, 2] # returns [1, 2]

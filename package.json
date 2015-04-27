@@ -19,6 +19,7 @@
     "coffee-script": "^1.9.1"
   },
   "dependencies": {
+    "lodash": "^3.7.0",
     "ramda": "^0.13.0",
     "util-inspect": "^0.1.8"
   }
