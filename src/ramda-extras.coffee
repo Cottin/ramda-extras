@@ -1,6 +1,6 @@
 R = require 'ramda'
 lo = require 'lodash'
-{curry, concat, I, compose, composeP, reduce, map, chain, length, filter, flatten, slice, eqDeep, get, has, merge, assoc, all, path, functions} = R #auto_require:funp
+{curry, concat, I, compose, composeP, reduce, mapObjIndexed, chain, length, filter, slice, eqDeep, prop, get, has, keys, pickAll, merge, assoc, all, path, functions} = R #auto_require:funp
 
 # is is a keyword in coffee, so we indroduce isa as an alias instead
 isa = R.is
@@ -22,6 +22,12 @@ doit = (xs..., x) -> x
 
 isEmptyObj = eqDeep {}
 
+# like http://ramdajs.com/docs/#pickAll but instead of undefined it returns the value of the key in the firs object
+pickOr = (keysAndDefaults, o) ->
+	picked = pickAll keys(keysAndDefaults), o
+	valueOrDefault = (v, k) -> if v == undefined then prop(k, keysAndDefaults) else v
+	return mapObjIndexed valueOrDefault, picked
+
 # takes a function f and it's params and return a function y which can later be invoked as a callback
 callback = (f, params...) -> () -> f(params...)
 
@@ -35,9 +41,6 @@ mergeMany = (original, objects...) -> reduce merge, original, objects
 # :: [a], [a], ... -> [a, a, ...]
 # concats many lists into one
 concatMany = (lists...) -> reduce concat, [], lists
-
-# :: f -> [a] -> [a]    # returns the result of applying concat to the result of applying map to f and [a]
-mapcat = compose flatten, map
 
 capitalize = _.capitalize
 toStr = (a) -> a+''
@@ -55,7 +58,7 @@ assoc_ = curry (k, v, x) ->
 	return y
 
 
-module.exports = {install, isa, dropLast, getPath, cc, ccp, doit, isEmptyObj, callback, indirect, mergeMany, assoc_, mapcat, capitalize, toStr}
+module.exports = {isa, dropLast, getPath, cc, ccp, doit, isEmptyObj, callback, indirect, mergeMany, assoc_, capitalize, toStr, pickOr}
 
 
 # deprecation line ----
