@@ -37,18 +37,18 @@ ccp = (functions..., data) -> composeP(functions...)(data)
 doit = (xs..., x) -> x
 
 # flytta till ramda-extras, typ 'composeP2'
-_composeP2 = (f, g) -> ->	
-	context = @
-	value = g.apply @, arguments
+_composeP2 = (f, g) -> ->
+	context = this
+	value = g.apply this, arguments
 	if isThenable value
 		if f._fail then value.fail (x) -> func.call context, x
 		else res.then (x) -> func.call context, x
-	else f.call @, value
+	else f.call this, value
 
 # _composeP = (f, g) ->
 # 	->
-# 		context = @
-# 		value = f.apply @, arguments
+# 		context = this
+# 		value = f.apply this, arguments
 # 		if isThenable value
 # 			if f._fail then value.fail
 
@@ -117,7 +117,7 @@ indirect = (f) -> (params...) -> (secondaryParams...) -> f(params..., secondaryP
 # STRING
 # ----------------------------------------------------------------------------------------------------------
 capitalize = lo.capitalize
-toStr = (a) -> a+''
+toStr = (a) -> a + ''
 
 # ----------------------------------------------------------------------------------------------------------
 # MATH
