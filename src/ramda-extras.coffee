@@ -1,6 +1,6 @@
 R = require 'ramda'
 lo = require 'lodash'
-{isNil, curry, concat, I, apply, compose, composeP, reduce, reduceRight, mapObjIndexed, chain, length, filter, slice, eqDeep, prop, get, has, func, keys, pickAll, merge, assoc, type, all, max, min, path, functions} = R #auto_require:funp
+{curry, concat, compose, composeP, reduce, reduceRight, mapObjIndexed, slice, eqDeep, prop, func, keys, pickAll, merge, type} = R #auto_require:funp
 
 
 # ----------------------------------------------------------------------------------------------------------
@@ -42,7 +42,7 @@ _composeP2 = (f, g) -> ->
 	value = g.apply this, arguments
 	if isThenable value
 		if f._fail then value.fail (x) -> func.call context, x
-		else res.then (x) -> func.call context, x
+		else value.then (x) -> func.call context, x
 	else f.call this, value
 
 # _composeP = (f, g) ->
