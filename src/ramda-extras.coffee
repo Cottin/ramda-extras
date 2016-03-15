@@ -1,6 +1,4 @@
 {add, addIndex, adjust, call, complement, compose, composeP, concat, curry, dec, difference, evolve, flip, fromPairs, head, init, intersection, into, isNil, keys, last, map, mapObjIndexed, max, merge, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs} = R = require 'ramda' #auto_require:ramda
-lo = require 'lodash'
-
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -43,8 +41,8 @@ pickOr = (keysAndDefaults, o) ->
 	valueOrDefault = (v, k) -> if v == undefined then prop(k, keysAndDefaults) else v
 	return mapObjIndexed valueOrDefault, picked
 
-# o0, o1, o2, ... -> o   # merges many objects into original
-mergeManyObj = (original, objects...) -> reduce merge, original, objects
+# o0, o1, o2, ... -> o   # merges many objects on top of original
+mergeMany = (original, objects...) -> reduce merge, original, objects
 
 # stolen from https://github.com/ramda/ramda/blob/master/src/internal/_isThenable.js
 isThenable = (value) -> value != null and value == Object(value) and typeof value.then == 'function'
@@ -154,7 +152,7 @@ flipAllAndPrependY = compose fromPairs, map(adjust(add('y'), 0)), toPairs, mapOb
 ramdaFlipped = flipAllAndPrependY R
 
 
-exports = {maxIn, minIn, mapIndexed, getPath, cc, ccp, mergeMany, mergeManyObj,
+exports = {maxIn, minIn, mapIndexed, getPath, cc, ccp, mergeMany,
 toStr, pickOr, isThenable, composeP2, fail, reduceObj, mergeOrEvolve,
 evolveAll, clamp, isNotNil}
 
