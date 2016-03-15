@@ -1,4 +1,4 @@
-{add, addIndex, adjust, call, complement, compose, composeP, concat, curry, dec, difference, evolve, flip, fromPairs, head, init, intersection, into, isNil, keys, last, map, mapObjIndexed, max, merge, min, path, pick, pickAll, pickBy, prop, reduce, reduceRight, split, toPairs} = R = require 'ramda' #auto_require:ramda
+{add, addIndex, adjust, call, complement, compose, composeP, concat, curry, dec, difference, evolve, flip, fromPairs, head, init, intersection, into, isNil, keys, last, map, mapObjIndexed, max, merge, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs} = R = require 'ramda' #auto_require:ramda
 lo = require 'lodash'
 
 
@@ -89,6 +89,12 @@ evolveAll = (spec, data) ->
 # FUNCTION
 # ----------------------------------------------------------------------------------------------------------
 # compose and call - makes syntactic sugar so we don't have to use so many parans
+# e.g. 
+#				accounts = [{id: 1, balance: 100.58}, {id: 2, balance: 83.21}]
+#				# in CoffeeScript instead of using lots of parens like so:
+# 			myTotalBalance = compose(sum, pluck('balance'))(accounts)
+#				# ... we can leave them out:
+#				myTotalBalance = cc sum, pluck('balance'), accounts
 cc = (functions..., data) -> compose(functions...)(data)
 
 # as cc but handling thenables
