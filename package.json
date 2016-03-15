@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "lodash": "^3.7.0",
-    "ramda": "^0.13.0",
+    "ramda": "^0.19.1",
     "util-inspect": "^0.1.8"
   }
 }

@@ -1,26 +1,88 @@
-R = require 'ramda'
+{add, addIndex, adjust, call, complement, compose, composeP, concat, curry, dec, difference, evolve, flip, fromPairs, head, init, intersection, into, isNil, keys, last, map, mapObjIndexed, max, merge, min, path, pick, pickAll, pickBy, prop, reduce, reduceRight, split, toPairs} = R = require 'ramda' #auto_require:ramda
 lo = require 'lodash'
-{curry, concat, compose, composeP, reduce, reduceRight, mapObjIndexed, slice, eqDeep, prop, func, keys, pickAll, merge, type} = R #auto_require:funp
 
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
 # ----------------------------------------------------------------------------------------------------------
-# is is a keyword in coffee, so we indroduce isa as an alias instead
-isa = R.is
 
 # path is such a good name, therefor here's an alias
-getPath = R.path
+# this is also more forgiving, you can send just a string (not [string])
+# and also just dot-separation
+getPath = curry (path, o) ->
+	pathToUse = if R.is(String, path) then split('.', path) else path
+	return R.path pathToUse, o
 
 
 # ----------------------------------------------------------------------------------------------------------
 # LIST
 # ----------------------------------------------------------------------------------------------------------
-dropLast = curry (n, xs) -> slice 0, xs.length - n, xs
 
-# :: [a], [a], ... -> [a, a, ...]
+# [a], [a], ... -> [a, a, ...]
 # concats many lists into one
 concatMany = (lists...) -> reduce concat, [], lists
+
+# [n] -> n
+# returns the biggest number of a list
+maxIn = reduce max, -Infinity
+
+# [n] -> n
+# returns the smallest number of a list
+minIn = reduce min, Infinity
+
+mapIndexed = addIndex map
+
+
+# ----------------------------------------------------------------------------------------------------------
+# OBJECT
+# ----------------------------------------------------------------------------------------------------------
+
+# like http://ramdajs.com/docs/#pickAll but instead of undefined it returns the value of the key in the first argument
+pickOr = (keysAndDefaults, o) ->
+	picked = pickAll keys(keysAndDefaults), o
+	valueOrDefault = (v, k) -> if v == undefined then prop(k, keysAndDefaults) else v
+	return mapObjIndexed valueOrDefault, picked
+
+# o0, o1, o2, ... -> o   # merges many objects into original
+mergeManyObj = (original, objects...) -> reduce merge, original, objects
+
+# stolen from https://github.com/ramda/ramda/blob/master/src/internal/_isThenable.js
+isThenable = (value) -> value != null and value == Object(value) and typeof value.then == 'function'
+
+# f -> o0 -> o1 -> o   # like https://clojuredocs.org/clojure.core/reduce-kv
+# NOTE: there is a caviat with this: https://github.com/ramda/ramda/issues/1067
+reduceObj = curry (f, init, o) ->
+	ret = cloneShallow init
+	callF = (v, k) -> ret = f(ret, k, v)
+	mapObjIndexed callF, o
+	return ret
+
+# {k:[a, b]} -> o -> o1
+# If k exists in o, evolves with b. If not, merges a.
+# Basically does a merge if the key does not alredy exist and an evolve if it does.
+# e.g. mergeOrEvolve {a: [2, dec], b: [2, null]}, {a: 1}
+#      returns {a: 0, b: 2}
+mergeOrEvolve = curry (spec, data) ->
+	# TODO: R.is(Array) is probably to stupid, wheat if the things you want to merge
+	# is an array. We should probably check if it's an array and if second item is a
+	# function or similar.
+	forcedMerges = pickBy complement(R.is(Array)), spec
+	data2 = merge data, forcedMerges
+	spec2 = pickBy R.is(Array), spec
+	missingKeys = difference keys(spec2), keys(data2)
+	sharedKeys = intersection keys(spec2), keys(data2)
+	toMerge = map head, pick(missingKeys, spec2)
+	merged = merge data2, toMerge
+	transformations = map last, pick(sharedKeys, spec2)
+	return evolve transformations, merged
+
+# {k:f} -> o -> o1   # if o doesn't have k, merges o with {k:undefined}, then evolves
+# TODO: Is this really needed? Only found one use in AutoComplete of this, double check it.
+evolveAll = (spec, data) ->
+	missingKeys = difference keys(spec), keys(data)
+	toMerge = pick missingKeys, spec
+	data2 = merge data, toMerge
+	return evolve spec, data2
 
 
 # ----------------------------------------------------------------------------------------------------------
@@ -32,116 +94,62 @@ cc = (functions..., data) -> compose(functions...)(data)
 # as cc but handling thenables
 ccp = (functions..., data) -> composeP(functions...)(data)
 
-# like https://clojuredocs.org/clojure.core/do
-# e.g. if you want to put function calls on the same line to save space, and get better readability :)
-doit = (xs..., x) -> x
-
-# flytta till ramda-extras, typ 'composeP2'
-_composeP2 = (f, g) -> ->
+_composeP2 = (acc, f) -> () ->
 	context = this
-	value = g.apply this, arguments
+	if !acc then return f.apply this, arguments
+	value = acc.apply this, arguments
 	if isThenable value
-		if f._fail then value.fail (x) -> func.call context, x
-		else value.then (x) -> func.call context, x
+		if f._fail
+			# console.log 'thenable fail:', f
+			value.fail (x) -> f.call context, x
+		else
+			# console.log 'thenable success:', f
+			value.then (x) -> f.call context, x
 	else f.call this, value
 
-# _composeP = (f, g) ->
-# 	->
-# 		context = this
-# 		value = f.apply this, arguments
-# 		if isThenable value
-# 			if f._fail then value.fail
+# like http://ramdajs.com/docs/#composeP but lets you go into the fail-branch of the promise as well
+composeP2 = (fs...) -> reduceRight _composeP2, null, fs
 
-# :: like http://ramdajs.com/docs/#composeP but lets you go into the fail-branch of the promise as well
-composeP2 = (fs..., f) -> reduceRight _composeP2, f, fs
+# f -> f   # wrapps f in a f2 with _fail=true so that composeP2 knows you want to go into the fail branch
+fail = (f) ->
+	context = this
+	f2 = -> f.apply context, arguments
+	f2._fail = true
+	return f2
 
-# :: f -> f   # assoces a _fail flag on a function f so that composeP2 knows you'll want to go into the fail branch
-fail = (f) -> assoc_ '_fail', true, f
 
 
 # ----------------------------------------------------------------------------------------------------------
-# OBJECT
+# TYPE
 # ----------------------------------------------------------------------------------------------------------
-isEmptyObj = eqDeep {}
 
-# like http://ramdajs.com/docs/#pickAll but instead of undefined it returns the value of the key in the first argument
-pickOr = (keysAndDefaults, o) ->
-	picked = pickAll keys(keysAndDefaults), o
-	valueOrDefault = (v, k) -> if v == undefined then prop(k, keysAndDefaults) else v
-	return mapObjIndexed valueOrDefault, picked
-
-# :: o0, o1, o2, ... -> o   # merges many objects into original
-mergeMany = (original, objects...) -> reduce merge, original, objects
-
-# :: a, [s], o -> a   # if the path exist in object, return it's value, otherwise defaultValue
-pathOr = curry (defaultValue, path, o) -> R.or(getPath(path, o), defaultValue)
-
-# stolen from https://github.com/ramda/ramda/blob/master/src/internal/_isThenable.js
-isThenable = (value) -> value != null and value == Object(value) and typeof value.then == 'function'
-
-# :: {k:v} -> {k:v}   # makes a shallow copy of o
-### jshint -W027 ###
-cloneShallow = (o) ->
-	switch
-		when isa(String, o) then return o
-		when isa(Number, o) then return o
-		when isa(Date, o) then return new Date(o)
-		when isa(RegExp, o) then throw new Error('TODO: cloneShallow of RegExp not yet implmented')
-		when isa(Object, o)
-			ret = {}
-			for k in o
-				ret[k] = o[k]
-			return ret
-		else throw new Error("TODO: cloneShallow of #{type(o)} not yet implemented")
-
-# :: f -> o0 -> o1 -> o   # like https://clojuredocs.org/clojure.core/reduce-kv
-reduceObj = curry (f, init, o) ->
-	ret = cloneShallow init
-	callF = (v, k) -> ret = f(ret, k, v)
-	mapObjIndexed callF, o
-	return ret
-
-
-# ----------------------------------------------------------------------------------------------------------
-# UI-HELPERS
-# ----------------------------------------------------------------------------------------------------------
-# takes a function f and it's params and return a function y which can later be invoked as a callback
-callback = (f, params...) -> () -> f(params...)
-
-# takes f and returns f2 expecting the arguments for f, then returns f3 taking any optional argumets and
-# calls f with all arguments that has been passed
-indirect = (f) -> (params...) -> (secondaryParams...) -> f(params..., secondaryParams...)
+isNotNil = complement isNil
 
 
 # ----------------------------------------------------------------------------------------------------------
 # STRING
 # ----------------------------------------------------------------------------------------------------------
-capitalize = lo.capitalize
+
 toStr = (a) -> a + ''
+
 
 # ----------------------------------------------------------------------------------------------------------
 # MATH
 # ----------------------------------------------------------------------------------------------------------
+
 clamp = curry (a, b, x) -> Math.min b, Math.max(a, x)
 
 
-
 # ----------------------------------------------------------------------------------------------------------
-# UNPURE STUFF
+# CONVENIENCE STUFF
 # ----------------------------------------------------------------------------------------------------------
-# unpure assoc (ie. good if you want to assoc something to a function)
-assoc_ = curry (k, v, x) ->
-	y = x
-	y[k] = v
-	return y
+# every function from ramda flipped :)
+flipAllAndPrependY = compose fromPairs, map(adjust(add('y'), 0)), toPairs, mapObjIndexed(flip)
+ramdaFlipped = flipAllAndPrependY R
 
 
-module.exports = {isa, dropLast, getPath, cc, ccp, doit, isEmptyObj, callback, indirect, mergeMany, assoc_, capitalize, toStr, pickOr, pathOr, isThenable, composeP2, fail, reduceObj, cloneShallow, clamp}
+exports = {maxIn, minIn, mapIndexed, getPath, cc, ccp, mergeMany, mergeManyObj,
+toStr, pickOr, isThenable, composeP2, fail, reduceObj, mergeOrEvolve,
+evolveAll, clamp, isNotNil}
 
-
-# deprecation line ----
-# (a -> [b]) -> [a] -> [b]		Like chain but filters away any items that isNil
-# chainNil = curry (f, xs) ->
-# 	res = chain f, xs
-# 	return filter R.not(isNil), res
-# #chainNil I, [1, null, 2] # returns [1, 2]
+module.exports = merge exports, ramdaFlipped
