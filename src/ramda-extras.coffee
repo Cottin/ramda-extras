@@ -1,4 +1,4 @@
-{__, add, addIndex, adjust, append, assoc, both, call, complement, compose, composeP, concat, curry, dec, difference, dissoc, evolve, flip, fromPairs, has, head, init, intersection, into, isNil, keys, last, map, mapObjIndexed, max, merge, mergeAll, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs} = R = require 'ramda' #auto_require:ramda
+{add, addIndex, adjust, assoc, both, call, complement, compose, composeP, concat, curry, dec, difference, dissoc, evolve, flip, fromPairs, has, head, init, intersection, into, isNil, keys, last, map, mapObjIndexed, max, merge, mergeAll, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -95,11 +95,11 @@ diffObj = curry (a, b) ->
 	res = {}
 	keysA = keys a
 	keysB = keys b
-	missingKeys = cc fromPairs, map(append(undefined)), difference(keysA), keysB
-	extraKeys = cc pick(__, b), difference(keysB), keysA
+	pairUndefined = (x) -> [x, undefined]
+	missingKeys = cc fromPairs, map(pairUndefined), difference(keysA), keysB
 	isNotSame = (v, k) -> a[k] != v
-	changedKeys = pickBy isNotSame, b
-	return mergeAll [missingKeys, extraKeys, changedKeys]
+	newAndChangedKeys = pickBy isNotSame, b
+	return mergeAll [missingKeys, newAndChangedKeys]
 
 # o1 -> o2 -> o
 # Takes a spec object with changes and applies them recursively to a.

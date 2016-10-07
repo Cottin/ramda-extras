@@ -8,16 +8,20 @@ deepEq = flip assert.deepEqual
 
 describe 'diffObj', ->
 	it 'missing', ->
-		res = diffObj {a: 1}, {}
-		deepEq {a: undefined}, res
+		res = diffObj {ab: 1}, {}
+		deepEq {ab: undefined}, res
 
 	it 'extra', ->
-		res = diffObj {}, {a: 1}
-		deepEq {a: 1}, res
+		res = diffObj {}, {ab: 1}
+		deepEq {ab: 1}, res
 
 	it 'changed', ->
-		res = diffObj {a: 1}, {a: 2}
-		deepEq {a: 2}, res
+		res = diffObj {ab: 1}, {ab: 2}
+		deepEq {ab: 2}, res
+
+	it 'no change', ->
+		res = diffObj {ab: true}, {ab: true}
+		deepEq {}, res
 
 	it 'performance', ->
 		a = {a: 1, b: 2, c: 3.1, d: true, e: 'testest', f: {f1: 1}}
