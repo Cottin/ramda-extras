@@ -1,4 +1,4 @@
-{add, addIndex, adjust, call, complement, compose, composeP, concat, curry, dec, difference, evolve, flip, fromPairs, head, init, intersection, into, isNil, keys, last, map, mapObjIndexed, max, merge, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs} = R = require 'ramda' #auto_require:ramda
+{__, add, addIndex, adjust, append, assoc, both, call, complement, compose, composeP, concat, curry, dec, difference, dissoc, evolve, flip, fromPairs, has, head, init, intersection, into, isNil, keys, last, map, mapObjIndexed, max, merge, mergeAll, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -82,6 +82,46 @@ evolveAll = (spec, data) ->
 	data2 = merge data, toMerge
 	return evolve spec, data2
 
+# o1 -> o2 -> o
+# Returns the asymetric difference between a and b as an object.
+# You can think of if as "what changes do I have to make to a in order to get b".
+# Keys in b not in a are included in the result
+# Keys in a not in be are included as {k: undefined} in the result
+# Keys in both a and b that has a different value in b are included in the result
+# Keys in both a and b that have the same value are not included in the result
+# see tests for examples
+# NOTE: for now this is only shallow
+diffObj = curry (a, b) -> 
+	res = {}
+	keysA = keys a
+	keysB = keys b
+	missingKeys = cc fromPairs, map(append(undefined)), difference(keysA), keysB
+	extraKeys = cc pick(__, b), difference(keysB), keysA
+	isNotSame = (v, k) -> a[k] != v
+	changedKeys = pickBy isNotSame, b
+	return mergeAll [missingKeys, extraKeys, changedKeys]
+
+# o1 -> o2 -> o
+# Takes a spec object with changes and applies them recursively to a.
+# The spec argument is compatible with the result of the diff-function.
+# NOTE: for now this is only shallow
+change = curry (spec, a) ->
+	newA = a
+	keys(spec).forEach (k) ->
+		v = spec[k]
+		if v == undefined
+			newA = dissoc k, newA
+		else if !R.is Object, v
+			newA = assoc k, v, newA
+		else if R.is Array, v
+			newA = assoc k, v, newA
+		else if R.is Function, v
+			newA = evolve {"#{k}": v}, newA
+		else
+			throw new Error 'nested changes not yet implemented'
+	return newA
+
+
 
 # ----------------------------------------------------------------------------------------------------------
 # FUNCTION
@@ -154,6 +194,6 @@ ramdaFlipped = flipAllAndPrependY R
 
 exports = {maxIn, minIn, mapIndexed, getPath, cc, ccp, mergeMany,
 toStr, pickOr, isThenable, composeP2, fail, reduceObj, mergeOrEvolve,
-evolveAll, clamp, isNotNil}
+evolveAll, clamp, isNotNil, diffObj, change}
 
 module.exports = merge exports, ramdaFlipped
