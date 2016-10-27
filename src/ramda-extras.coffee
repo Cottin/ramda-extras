@@ -1,4 +1,4 @@
-{add, addIndex, adjust, assoc, both, call, complement, compose, composeP, concat, curry, dec, difference, dissoc, evolve, flip, fromPairs, has, head, init, intersection, into, isNil, keys, last, map, mapObjIndexed, max, merge, mergeAll, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs} = R = require 'ramda' #auto_require:ramda
+{add, addIndex, adjust, always, assoc, both, call, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, either, equals, evolve, flip, fromPairs, has, head, init, intersection, into, isEmpty, isNil, keys, last, map, mapObjIndexed, max, merge, mergeAll, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs, type, union} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -82,44 +82,77 @@ evolveAll = (spec, data) ->
 	data2 = merge data, toMerge
 	return evolve spec, data2
 
-# o1 -> o2 -> o
+# o -> o -> o
 # Returns the asymetric difference between a and b as an object.
-# You can think of if as "what changes do I have to make to a in order to get b".
+# You can think of it as "what changes do I have to make to a in order to get b".
 # Keys in b not in a are included in the result
 # Keys in a not in be are included as {k: undefined} in the result
 # Keys in both a and b that has a different value in b are included in the result
 # Keys in both a and b that have the same value are not included in the result
-# see tests for examples
-# NOTE: for now this is only shallow
-diffObj = curry (a, b) -> 
-	res = {}
+# Handles nested data structures.
+# See tests for examples!
+diff = curry (a, b) ->
 	keysA = keys a
 	keysB = keys b
-	pairUndefined = (x) -> [x, undefined]
-	missingKeys = cc fromPairs, map(pairUndefined), difference(keysA), keysB
-	isNotSame = (v, k) -> a[k] != v
-	newAndChangedKeys = pickBy isNotSame, b
-	return mergeAll [missingKeys, newAndChangedKeys]
+	allKeys = union keysA, keysB
+	res = {}
+	for k in allKeys
+		v = b[k]
+		if !contains k, keysA # only in b
+			res[k] = v
+		else if !contains k, keysB # only in a
+			res[k] = undefined
+		else if a[k] == v # no differance
+			# do nothing
+		else if equals a[k], v # no deep differance
+			# do nothing
+		else
+			switch type v
+				# note: Arrays are handled simplistically; always replacing if changed
+				when 'Array', 'Null', 'String', 'Number', 'Boolean'
+					res[k] = v
+				when 'Object'
+					if type(a[k]) != 'Object' # no need to recurse
+						res[k] = v
+					else if isEmpty a[k] # no need to recurse
+						res[k] = v
+					else
+						res[k] = diff a[k], v
+				when 'RegExp'
+					throw new Error 'diff does not support RegExps in either a or b'
+				when 'Function'
+					throw new Error 'diff does not (yet) support Functions in either a or b'
 
-# o1 -> o2 -> o
+	return res
+
+# o -> o -> o
 # Takes a spec object with changes and applies them recursively to a.
 # The spec argument is compatible with the result of the diff-function.
-# NOTE: for now this is only shallow
 change = curry (spec, a) ->
 	newA = a
-	keys(spec).forEach (k) ->
+	keysSpec = keys spec
+	for k in keysSpec
 		v = spec[k]
-		if v == undefined
-			newA = dissoc k, newA
-		else if !R.is Object, v
-			newA = assoc k, v, newA
-		else if R.is Array, v
-			newA = assoc k, v, newA
-		else if R.is Function, v
-			newA = evolve {"#{k}": v}, newA
-		else
-			throw new Error 'nested changes not yet implemented'
+		switch type v
+			when 'Undefined'
+				newA = dissoc k, newA
+			when 'Array', 'Null', 'String', 'Number', 'Boolean'
+				newA = assoc k, v, newA
+			when 'Function'
+				newA = evolve {"#{k}": v}, newA
+			when 'Object'
+				if type(a[k]) != 'Object' # no need to recurse
+					newA = assoc k, v, newA
+				else if isEmpty v # no need to recurse
+					newA = assoc k, v, newA
+				else
+					v_ = change v, a[k]
+					newA = assoc k, v_, newA
+			when 'RegExp'
+				throw new Error 'change does not support RegExp in either a or b'
 	return newA
+
+
 
 
 
@@ -194,6 +227,43 @@ ramdaFlipped = flipAllAndPrependY R
 
 exports = {maxIn, minIn, mapIndexed, getPath, cc, ccp, mergeMany,
 toStr, pickOr, isThenable, composeP2, fail, reduceObj, mergeOrEvolve,
-evolveAll, clamp, isNotNil, diffObj, change}
+evolveAll, clamp, isNotNil, diff, change}
 
 module.exports = merge exports, ramdaFlipped
+	
+
+
+
+
+# NOTE: for now this is only shallow
+# NOTE: deprecated
+# diff = curry (a, b) -> 
+# 	res = {}
+# 	keysA = keys a
+# 	keysB = keys b
+# 	pairUndefined = (x) -> [x, undefined]
+# 	missingKeys = cc fromPairs, map(pairUndefined), difference(keysA), keysB
+# 	isNotSame = (v, k) -> a[k] != v
+# 	newAndChangedKeys = pickBy isNotSame, b
+# 	return mergeAll [missingKeys, newAndChangedKeys]
+
+
+
+# NOTE: for now this is only shallow
+# deprecated
+# change = curry (spec, a) ->
+# 	newA = a
+# 	keys(spec).forEach (k) ->
+# 		v = spec[k]
+# 		if v == undefined
+# 			newA = dissoc k, newA
+# 		else if !R.is Object, v
+# 			newA = assoc k, v, newA
+# 		else if R.is Array, v
+# 			newA = assoc k, v, newA
+# 		else if R.is Function, v
+# 			newA = evolve {"#{k}": v}, newA
+# 		else
+# 			throw new Error 'nested changes not yet implemented'
+# 	return newA
+
