@@ -1,4 +1,4 @@
-{add, addIndex, adjust, always, assoc, both, call, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, either, equals, evolve, flip, fromPairs, has, head, init, intersection, into, isEmpty, isNil, keys, last, map, mapObjIndexed, max, merge, mergeAll, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs, type, union} = R = require 'ramda' #auto_require:ramda
+{add, addIndex, adjust, always, assoc, both, call, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, either, equals, evolve, flip, fromPairs, has, head, init, intersection, into, isEmpty, isNil, keys, last, map, mapObjIndexed, max, merge, mergeAll, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs, type, union, where} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -152,6 +152,28 @@ change = curry (spec, a) ->
 				throw new Error 'change does not support RegExp in either a or b'
 	return newA
 
+# o -> [s]
+# Takes a delta object (maybe the result of diff) and returns an array with
+# the paths that where "changed" in that delta.
+changedPaths = (delta) ->
+	paths = []
+	ks = keys delta
+	for k in ks
+		v = delta[k]
+		switch type v
+			when 'Undefined', 'Array', 'Null', 'String', 'Number', 'Boolean'
+				paths.push k
+			when 'Function'
+				paths.push k
+			when 'Object'
+				nestedPaths = map add("#{k}."), changedPaths(v)
+				paths = concat paths, nestedPaths
+			when 'RegExp'
+				throw new Error 'changedPaths does not support RegExp in either a or b'
+	return paths
+
+
+
 
 
 
@@ -227,7 +249,7 @@ ramdaFlipped = flipAllAndPrependY R
 
 exports = {maxIn, minIn, mapIndexed, getPath, cc, ccp, mergeMany,
 toStr, pickOr, isThenable, composeP2, fail, reduceObj, mergeOrEvolve,
-evolveAll, clamp, isNotNil, diff, change}
+evolveAll, clamp, isNotNil, diff, change, changedPaths}
 
 module.exports = merge exports, ramdaFlipped
 	

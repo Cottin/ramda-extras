@@ -1,7 +1,7 @@
 assert = require 'assert'
 {append, empty, evolve, flip, inc, merge, remove, replace, test, values} = R = require 'ramda' #auto_require:ramda
 
-{diff, change} = require './ramda-extras'
+{diff, change, changedPaths} = require './ramda-extras'
 
 eq = flip assert.strictEqual
 deepEq = flip assert.deepEqual
@@ -170,6 +170,21 @@ describe 'change', ->
 				delta = {a: {a1: {a11: {a111: 1}}}}
 				res = change delta, a
 				eq delta.a.a1, res.a.a1
+
+describe 'changedPaths', ->
+	it 'simple case', ->
+		delta = {a: 1, b: 2}
+		deepEq ['a', 'b'], changedPaths delta
+
+	it 'nested simple', ->
+		delta = {a: 1, b: {b1: {b11: [1, '2']}}}
+		deepEq ['a', 'b.b1.b11'], changedPaths delta
+
+	it 'nested complex', ->
+		delta = {a: 1, b: {b1: {b11: [1, '2']}}, c: {c1: {c11: 1, c12: 2}, c2: 1}}
+		res = changedPaths delta
+		deepEq ['a', 'b.b1.b11', 'c.c1.c11', 'c.c1.c12', 'c.c2'], res
+
 
 
 
