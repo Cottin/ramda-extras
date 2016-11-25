@@ -1,5 +1,5 @@
 assert = require 'assert'
-{append, empty, evolve, flip, inc, merge, remove, replace, test, values} = R = require 'ramda' #auto_require:ramda
+{append, assoc, dissoc, empty, evolve, flip, inc, merge, remove, replace, test, values} = R = require 'ramda' #auto_require:ramda
 
 {diff, change, changedPaths} = require './ramda-extras'
 
@@ -149,6 +149,20 @@ describe 'change', ->
 			res = change delta, a
 			deepEq b, res
 
+		it '$assoc', ->
+			a = {a: {a1: {a11: 1, a12: 2}, a2: 0}, b2: 3}
+			a1_ = {a11: 10, a12: 20}
+			delta = {a: {a1: {$assoc: a1_}}}
+			res = change delta, a
+			eq a1_, res.a.a1
+
+		it '$dissoc', ->
+			a = {a: {a1: {a11: 1, a12: 2}, a2: 0}, b2: 3}
+			b = {a: {a1: {a12: 2}, a2: 0}, b2: 3}
+			delta = {a: {a1: {$dissoc: 'a11'}}}
+			res = change delta, a
+			deepEq b, res
+
 		describe 'nested one more level', ->
 			it 'merge number', ->
 				a = {a: {a1: {a11: 0, a12: 1}, a2: 0}, b2: 3}
@@ -176,14 +190,25 @@ describe 'changedPaths', ->
 		delta = {a: 1, b: 2}
 		deepEq ['a', 'b'], changedPaths delta
 
-	it 'nested simple', ->
+	it 'simple', ->
 		delta = {a: 1, b: {b1: {b11: [1, '2']}}}
 		deepEq ['a', 'b.b1.b11'], changedPaths delta
 
-	it 'nested complex', ->
+	it 'complex', ->
 		delta = {a: 1, b: {b1: {b11: [1, '2']}}, c: {c1: {c11: 1, c12: 2}, c2: 1}}
 		res = changedPaths delta
 		deepEq ['a', 'b.b1.b11', 'c.c1.c11', 'c.c1.c12', 'c.c2'], res
+
+	it '$assoc', ->
+		delta = {a: 1, b: {b1: 1}, c: {c1: {$assoc: {c11: 1, c12: 2}}, c2: 1}}
+		res = changedPaths delta
+		deepEq ['a', 'b.b1', 'c.c1', 'c.c2'], res
+
+	it '$dissoc', ->
+		delta = {a: 1, b: {b1: 1}, c: {c1: {$dissoc: 'c11'}, c2: 1}}
+		res = changedPaths delta
+		deepEq ['a', 'b.b1', 'c.c1.c11', 'c.c2'], res
+
 
 
 

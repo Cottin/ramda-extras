@@ -1,4 +1,4 @@
-{add, addIndex, adjust, always, assoc, both, call, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, either, equals, evolve, flip, fromPairs, has, head, init, intersection, into, isEmpty, isNil, keys, last, map, mapObjIndexed, max, merge, mergeAll, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs, type, union, where} = R = require 'ramda' #auto_require:ramda
+{add, addIndex, adjust, always, assoc, both, call, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, dissocPath, either, equals, evolve, flip, fromPairs, has, head, init, intersection, into, isEmpty, isNil, keys, last, map, mapObjIndexed, max, merge, mergeAll, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs, type, union, where} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -145,6 +145,8 @@ change = curry (spec, a) ->
 					newA = assoc k, v, newA
 				else if isEmpty v # no need to recurse
 					newA = assoc k, v, newA
+				else if has '$assoc', v then newA = assoc k, v['$assoc'], newA
+				else if has '$dissoc', v then newA = dissocPath [k, v['$dissoc']], newA
 				else
 					v_ = change v, a[k]
 					newA = assoc k, v_, newA
@@ -166,8 +168,11 @@ changedPaths = (delta) ->
 			when 'Function'
 				paths.push k
 			when 'Object'
-				nestedPaths = map add("#{k}."), changedPaths(v)
-				paths = concat paths, nestedPaths
+				if has '$assoc', v then paths.push k
+				else if has '$dissoc', v then paths.push k + '.' + v['$dissoc']
+				else
+					nestedPaths = map add("#{k}."), changedPaths(v)
+					paths = concat paths, nestedPaths
 			when 'RegExp'
 				throw new Error 'changedPaths does not support RegExp in either a or b'
 	return paths
