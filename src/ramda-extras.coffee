@@ -1,4 +1,4 @@
-{add, addIndex, adjust, always, assoc, both, call, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, dissocPath, either, equals, evolve, flip, fromPairs, has, head, init, intersection, into, isEmpty, isNil, keys, last, map, mapObjIndexed, max, merge, mergeAll, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs, type, union, where} = R = require 'ramda' #auto_require:ramda
+{add, addIndex, adjust, always, assoc, both, call, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, dissocPath, either, empty, equals, evolve, flip, fromPairs, has, head, init, intersection, into, isEmpty, isNil, keys, last, map, mapObjIndexed, max, merge, mergeAll, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs, type, union, where, without} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -46,6 +46,8 @@ mergeMany = (original, objects...) -> reduce merge, original, objects
 
 # stolen from https://github.com/ramda/ramda/blob/master/src/internal/_isThenable.js
 isThenable = (value) -> value != null and value == Object(value) and typeof value.then == 'function'
+
+isIterable = (o) -> !isNil(o) && typeof o[Symbol.iterator] == 'function'
 
 # f -> o0 -> o1 -> o   # like https://clojuredocs.org/clojure.core/reduce-kv
 # NOTE: there is a caviat with this: https://github.com/ramda/ramda/issues/1067
@@ -125,6 +127,32 @@ diff = curry (a, b) ->
 
 	return res
 
+# If you have a $-command or function one or more levels down in your spec
+# and the object to change is empty under that key, we help by resolving
+# those commands or functions.
+# e.g. change {a: {$assoc: {x: 1}}}, {}
+#      without resolve: {a: {$assoc: {x: 1}}}
+#      with resolve: {a: {x: 1}}
+_resolveIfNeeded = (o) ->
+	o_ = o
+	resolve = (v, k) ->
+		if k == '$assoc' then o_ = v
+		else if k == '$dissoc' then o_ = dissoc '$dissoc', o_
+		else
+			switch type v
+				when 'Undefined'
+					return # do nothing
+				when 'Array', 'Null', 'String', 'Number', 'Boolean'
+					return # do nothing
+				when 'Function'
+					_v = v(undefined)
+					o_ = assoc k, _v, o_
+				when 'Object'
+					o_[k] = _resolveIfNeeded v
+
+	mapObjIndexed resolve, o
+	return o_
+
 # o -> o -> o
 # Takes a spec object with changes and applies them recursively to a.
 # The spec argument is compatible with the result of the diff-function.
@@ -141,8 +169,9 @@ change = curry (spec, a) ->
 			when 'Function'
 				newA = evolve {"#{k}": v}, newA
 			when 'Object'
-				if type(a[k]) != 'Object' # no need to recurse
-					newA = assoc k, v, newA
+				if isNil(a[k]) || type(a[k]) != 'Object'
+					v_ = _resolveIfNeeded v
+					newA = assoc k, v_, newA
 				else if isEmpty v # no need to recurse
 					newA = assoc k, v, newA
 				else if has '$assoc', v then newA = assoc k, v['$assoc'], newA
@@ -253,7 +282,7 @@ ramdaFlipped = flipAllAndPrependY R
 
 
 exports = {maxIn, minIn, mapIndexed, getPath, cc, ccp, mergeMany,
-toStr, pickOr, isThenable, composeP2, fail, reduceObj, mergeOrEvolve,
+toStr, pickOr, isThenable, isIterable, composeP2, fail, reduceObj, mergeOrEvolve,
 evolveAll, clamp, isNotNil, diff, change, changedPaths}
 
 module.exports = merge exports, ramdaFlipped

@@ -163,6 +163,20 @@ describe 'change', ->
 			res = change delta, a
 			deepEq b, res
 
+		it '$assoc, a is empty', ->
+			a = {a: {a2: 0}, b2: 3}
+			a1_ = {a11: 10, a12: 20}
+			delta = {a: {a1: {$assoc: a1_}}}
+			res = change delta, a
+			eq a1_, res.a.a1
+
+		it '$assoc, a is empty deep', ->
+			a = {a: {a2: 0}, b2: 3}
+			a111_ = {a11: 10, a12: 20}
+			delta = {a: {a1: {a11: {a111: {$assoc: a111_}}}}}
+			res = change delta, a
+			eq a111_, res.a.a1.a11.a111
+
 		describe 'nested one more level', ->
 			it 'merge number', ->
 				a = {a: {a1: {a11: 0, a12: 1}, a2: 0}, b2: 3}
