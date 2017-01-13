@@ -1,4 +1,4 @@
-{add, addIndex, adjust, always, assoc, both, call, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, dissocPath, either, empty, equals, evolve, flip, fromPairs, has, head, init, intersection, into, isEmpty, isNil, keys, last, map, mapObjIndexed, max, merge, mergeAll, min, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs, type, union, where, without} = R = require 'ramda' #auto_require:ramda
+{__, add, addIndex, adjust, always, assoc, both, call, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, dissocPath, either, empty, equals, evolve, flip, fromPairs, has, head, init, intersection, into, isEmpty, isNil, keys, last, lensPath, map, mapObjIndexed, max, merge, mergeAll, min, over, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs, type, union, where, without} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -138,6 +138,7 @@ _resolveIfNeeded = (o) ->
 	resolve = (v, k) ->
 		if k == '$assoc' then o_ = v
 		else if k == '$dissoc' then o_ = dissoc '$dissoc', o_
+		else if k == '$merge' then o_ = v
 		else
 			switch type v
 				when 'Undefined'
@@ -176,6 +177,8 @@ change = curry (spec, a) ->
 					newA = assoc k, v, newA
 				else if has '$assoc', v then newA = assoc k, v['$assoc'], newA
 				else if has '$dissoc', v then newA = dissocPath [k, v['$dissoc']], newA
+				else if has '$merge', v
+					newA = over lensPath([k]), merge(__, v['$merge']), newA
 				else
 					v_ = change v, a[k]
 					newA = assoc k, v_, newA
@@ -199,6 +202,9 @@ changedPaths = (delta) ->
 			when 'Object'
 				if has '$assoc', v then paths.push k
 				else if has '$dissoc', v then paths.push k + '.' + v['$dissoc']
+				else if has '$merge', v
+					mergeKeys = cc map(add("#{k}.")), keys, v['$merge']
+					paths.push mergeKeys...
 				else
 					nestedPaths = map add("#{k}."), changedPaths(v)
 					paths = concat paths, nestedPaths

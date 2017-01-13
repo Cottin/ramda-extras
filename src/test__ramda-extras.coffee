@@ -177,6 +177,29 @@ describe 'change', ->
 			res = change delta, a
 			eq a111_, res.a.a1.a11.a111
 
+		it '$merge', ->
+			o = {a: {a1: {a11: {a111: 1}, a12: {a121: 2}}, a2: 0}, b2: 3}
+			a1_ = {a11: {a111: 10}, a13: {a131: 30}}
+			delta = {a: {a1: {$merge: a1_}}}
+			res = change delta, o
+			eq a1_.a11, res.a.a1.a11
+			eq o.a.a1.a12, res.a.a1.a12
+			eq a1_.a13, res.a.a1.a13
+
+		it '$merge, a is empty', ->
+			a = {a: {a2: 0}, b2: 3}
+			a1_ = {a11: 10, a12: 20}
+			delta = {a: {a1: {$merge: a1_}}}
+			res = change delta, a
+			eq a1_, res.a.a1
+
+		it '$merge, a is empty deep', ->
+			a = {a: {a2: 0}, b2: 3}
+			a111_ = {a11: 10, a12: 20}
+			delta = {a: {a1: {a11: {a111: {$merge: a111_}}}}}
+			res = change delta, a
+			eq a111_, res.a.a1.a11.a111
+
 		describe 'nested one more level', ->
 			it 'merge number', ->
 				a = {a: {a1: {a11: 0, a12: 1}, a2: 0}, b2: 3}
@@ -222,6 +245,11 @@ describe 'changedPaths', ->
 		delta = {a: 1, b: {b1: 1}, c: {c1: {$dissoc: 'c11'}, c2: 1}}
 		res = changedPaths delta
 		deepEq ['a', 'b.b1', 'c.c1.c11', 'c.c2'], res
+
+	it '$merge', ->
+		delta = {a: 1, b: {b1: 1}, c: {c1: {$merge: {c11: 1, c12: 2}}, c2: 1}}
+		res = changedPaths delta
+		deepEq ['a', 'b.b1', 'c.c1.c11', 'c.c1.c12', 'c.c2'], res
 
 
 
