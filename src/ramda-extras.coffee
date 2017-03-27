@@ -1,4 +1,4 @@
-{__, add, addIndex, adjust, always, assoc, both, call, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, dissocPath, either, empty, equals, evolve, flip, fromPairs, has, head, init, intersection, into, isEmpty, isNil, keys, last, lensPath, map, mapObjIndexed, max, merge, mergeAll, min, over, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, toPairs, type, union, where, without} = R = require 'ramda' #auto_require:ramda
+{__, add, addIndex, adjust, always, assoc, both, call, clone, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, dissocPath, either, empty, equals, evolve, flip, fromPairs, has, head, init, intersection, into, isEmpty, isNil, keys, last, lensPath, map, mapObjIndexed, max, merge, mergeAll, min, over, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, test, toPairs, type, union, where, without} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -133,6 +133,8 @@ diff = curry (a, b) ->
 # e.g. change {a: {$assoc: {x: 1}}}, {}
 #      without resolve: {a: {$assoc: {x: 1}}}
 #      with resolve: {a: {x: 1}}
+# TODO: this multates! see if there is a fix! ex. test__cache.coffee: setCache:
+# 			must do a clone!
 _resolveIfNeeded = (o) ->
 	o_ = o
 	resolve = (v, k) ->
@@ -168,6 +170,7 @@ change = curry (spec, a) ->
 			when 'Array', 'Null', 'String', 'Number', 'Boolean'
 				newA = assoc k, v, newA
 			when 'Function'
+				if ! has k, newA then newA[k] = null
 				newA = evolve {"#{k}": v}, newA
 			when 'Object'
 				if isNil(a[k]) || type(a[k]) != 'Object'

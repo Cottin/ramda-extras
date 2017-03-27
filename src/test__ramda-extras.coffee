@@ -1,5 +1,5 @@
 assert = require 'assert'
-{append, assoc, dissoc, empty, evolve, flip, inc, merge, remove, replace, test, values} = R = require 'ramda' #auto_require:ramda
+{append, assoc, dissoc, empty, evolve, flip, inc, isNil, merge, remove, replace, set, test, values} = R = require 'ramda' #auto_require:ramda
 
 {diff, change, changedPaths} = require './ramda-extras'
 
@@ -99,6 +99,10 @@ describe 'change', ->
 		res = change {a: undefined}, {a: 1, b: 2}
 		deepEq {b: 2}, res
 
+	it 'set to null', ->
+		res = change {a: null}, {a: 1, b: 2}
+		deepEq {a: null, b: 2}, res
+
 	it 'merge array', ->
 		res = change {a: [2, 3]}, {a: [1]}
 		deepEq {a: [2, 3]}, res
@@ -106,6 +110,10 @@ describe 'change', ->
 	it 'evolve if using function', ->
 		res = change {a: inc}, {a: 1}
 		deepEq {a: 2}, res
+
+	it 'evolve if using function and create key if not there', ->
+		res = change {a: (x) -> if isNil(x) then 1 else inc}, {}
+		deepEq {a: 1}, res
 
 	it 'reuses values from spec', ->
 		a = {a: null, b2: 3}
