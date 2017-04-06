@@ -162,6 +162,8 @@ _resolveIfNeeded = (o) ->
 change = curry (spec, a) ->
 	newA = a
 	keysSpec = keys spec
+	if has '$assoc', spec then return spec.$assoc
+
 	for k in keysSpec
 		v = spec[k]
 		switch type v

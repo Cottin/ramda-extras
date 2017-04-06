@@ -185,6 +185,13 @@ describe 'change', ->
 			res = change delta, a
 			eq a111_, res.a.a1.a11.a111
 
+		it '$assoc, root level', ->
+			a = {a: {a2: 0}, b2: 3}
+			a1_ = {a11: 10, a12: 20}
+			delta = {$assoc: a1_}
+			res = change delta, a
+			eq a1_, res
+
 		it '$merge', ->
 			o = {a: {a1: {a11: {a111: 1}, a12: {a121: 2}}, a2: 0}, b2: 3}
 			a1_ = {a11: {a111: 10}, a13: {a131: 30}}
