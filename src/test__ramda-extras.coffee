@@ -1,7 +1,7 @@
 assert = require 'assert'
-{append, assoc, dissoc, empty, evolve, flip, inc, isNil, merge, remove, replace, set, test, values} = R = require 'ramda' #auto_require:ramda
+{__, append, assoc, dissoc, empty, evolve, flip, gt, inc, isNil, merge, remove, replace, set, test, values} = R = require 'ramda' #auto_require:ramda
 
-{diff, change, changedPaths} = require './ramda-extras'
+{diff, change, changedPaths, fits} = require './ramda-extras'
 
 eq = flip assert.strictEqual
 deepEq = flip assert.deepEqual
@@ -268,6 +268,85 @@ describe 'changedPaths', ->
 
 
 
+describe 'fits', ->
+	it 'empty', ->
+		eq true, fits({}, {})
+
+	it 'shallow', ->
+		res = fits {a: 1, b: 'b', c: false}, {a: 1, b: 'b', c: false, d: 1}
+		eq true, res
+
+	it 'shallow false', ->
+		res = fits {a: 1, b: 'b', c: true}, {a: 1, b: 'b', c: false, d: 1}
+		eq false, res
+
+	it 'two levels', ->
+		spec = {a: {a1: 1, a2: 'a'}, c: true}
+		res = fits spec, {a: {a1: 1, a2: 'a'}, b: 'b', c: true, d: 1}
+		eq true, res
+
+	it 'two levels false', ->
+		spec = {a: {a1: 1, a2: 'x'}, c: true}
+		res = fits spec, {a: {a1: 1, a2: 'a'}, b: 'b', c: true, d: 1}
+		eq false, res
+
+	it 'array', ->
+		spec = {a: {a1: 1, a2: [1,2,3]}, c: true}
+		res = fits spec, {a: {a1: 1, a2: [1,2,3]}, b: 'b', c: true, d: 1}
+		eq true, res
+
+	it 'array false', ->
+		spec = {a: {a1: 1, a2: [1,2,3]}, c: true}
+		res = fits spec, {a: {a1: 1, a2: [1,3,2]}, b: 'b', c: true, d: 1}
+		eq false, res
+
+	it 'function', ->
+		spec = {a: {a1: 1, a2: gt(__, 9)}, c: true}
+		res = fits spec, {a: {a1: 1, a2: 10}, b: 'b', c: true, d: 1}
+		eq true, res
+
+	it 'function false', ->
+		spec = {a: {a1: 1, a2: gt(__, 10)}, c: true}
+		res = fits spec, {a: {a1: 1, a2: 10}, b: 'b', c: true, d: 1}
+		eq false, res
+
+	it 'regexp', ->
+		spec = {a: {a1: 1, a2: /^lo/}, c: true}
+		res = fits spec, {a: {a1: 1, a2: 'love'}, b: 'b', c: true, d: 1}
+		eq true, res
+
+	it 'regexp false', ->
+		spec = {a: {a1: 1, a2: /lo$/}, c: true}
+		res = fits spec, {a: {a1: 1, a2: 'love'}, b: 'b', c: true, d: 1}
+		eq false, res
+
+	it 'null == null', ->
+		spec = {a: {a1: 1, a2: null}, c: true}
+		res = fits spec, {a: {a1: 1, a2: null}, b: 'b', c: true, d: 1}
+		eq true, res
+
+	it 'undefined == undefined', ->
+		spec = {a: {a1: 1, a2: undefined}, c: true}
+		res = fits spec, {a: {a1: 1, a2: undefined}, b: 'b', c: true, d: 1}
+		eq true, res
+
+	it 'null != undefined', ->
+		spec = {a: {a1: 1, a2: null}, c: true}
+		res = fits spec, {a: {a1: 1, a2: undefined}, b: 'b', c: true, d: 1}
+		eq false, res
+
+
+
+
+
+
+
+
+
+
+
+
+		 
 
 
 

@@ -219,7 +219,27 @@ changedPaths = (delta) ->
 
 
 
+# o -> o -> bool
+# Checks recursively if spec "fits" inside o, i.e. if o "conforms" to spec.
+# e.g. 	fits {a: {a1: 1}, b: 'b'}, {a: {a1: 1, a2: 2}, b: 'b', c: 'c'} = true
+# 			fits {a: {a1: 2}, b: 'b'}, {a: {a1: 1, a2: 2}, b: 'b', c: 'c'} = false
+fits = curry (spec, o) ->
+	ks = keys spec
+	for k in ks
+		v = spec[k]
+		switch type v
+			when 'Undefined', 'Null', 'String', 'Number', 'Boolean'
+				if v != o[k] then return false
+			when 'Array'
+				if ! equals v, o[k] then return false
+			when 'Function'
+				if ! v(o[k]) then return false
+			when 'RegExp'
+				if ! test v, o[k] then return false
+			when 'Object'
+				if ! fits v, o[k] then return false
 
+	return true
 
 
 
@@ -294,9 +314,12 @@ ramdaFlipped = flipAllAndPrependY R
 
 exports = {maxIn, minIn, mapIndexed, getPath, cc, ccp, mergeMany,
 toStr, pickOr, isThenable, isIterable, composeP2, fail, reduceObj, mergeOrEvolve,
-evolveAll, clamp, isNotNil, diff, change, changedPaths}
+evolveAll, clamp, isNotNil, diff, change, changedPaths, fits}
 
-module.exports = merge exports, ramdaFlipped
+exportsFlipped = flipAllAndPrependY {pickOr, mergeOrEvolve, evolveAll, diff,
+change, fits, clamp}
+
+module.exports = mergeMany exports, exportsFlipped, ramdaFlipped
 	
 
 
