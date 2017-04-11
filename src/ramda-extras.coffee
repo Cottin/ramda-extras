@@ -1,4 +1,4 @@
-{__, add, addIndex, adjust, always, assoc, both, call, clone, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, dissocPath, either, empty, equals, evolve, flip, fromPairs, has, head, init, intersection, into, isEmpty, isNil, keys, last, lensPath, map, mapObjIndexed, max, merge, mergeAll, min, over, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, split, sum, test, toPairs, type, union, where, without} = R = require 'ramda' #auto_require:ramda
+{__, add, addIndex, adjust, always, assoc, both, call, clone, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, dissocPath, drop, either, empty, equals, evolve, flip, fromPairs, groupBy, has, head, init, intersection, into, isEmpty, isNil, keys, last, lensPath, map, mapObjIndexed, max, merge, mergeAll, min, over, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, reject, remove, split, sum, test, toPairs, type, union, where, without} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -41,6 +41,22 @@ pickOr = (keysAndDefaults, o) ->
 	valueOrDefault = (v, k) -> if v == undefined then prop(k, keysAndDefaults) else v
 	return mapObjIndexed valueOrDefault, picked
 
+# [[s]] | [s] -> o -> o   # like http://ramdajs.com/docs/#pick but recursive
+# Accepts paths as 'a.b.c' or ['a', 'b', 'c']
+# e.g.	pickRec ['a.a1', 'b'], {a: {a1: 1, a2: 2}, b: 2, c: 3}
+# 			returns {a: {a1: 1}, b: 2}
+pickRec = (paths, o) ->
+	ensureArray = (k) -> if type(k) == 'String' then split '.', k else k
+	paths_ = map ensureArray, paths
+
+	# group paths by first key in path and remove that first key in the paths
+	grouped = cc map(reject(isEmpty)), map(map(drop(1))), groupBy(head), paths_
+
+	return yfoldObj grouped, {}, (acc, k, v) ->
+		if ! has k, o then acc
+		else if isEmpty v then assoc k, o[k], acc
+		else assoc k, pickRec(v, o[k]), acc
+
 # o0, o1, o2, ... -> o   # merges many objects on top of original
 mergeMany = (original, objects...) -> reduce merge, original, objects
 
@@ -51,11 +67,21 @@ isIterable = (o) -> !isNil(o) && typeof o[Symbol.iterator] == 'function'
 
 # f -> o0 -> o1 -> o   # like https://clojuredocs.org/clojure.core/reduce-kv
 # NOTE: there is a caviat with this: https://github.com/ramda/ramda/issues/1067
-reduceObj = curry (f, init, o) ->
-	ret = cloneShallow init
-	callF = (v, k) -> ret = f(ret, k, v)
-	mapObjIndexed callF, o
-	return ret
+# Denna känns fel! kommenterade bort.
+# reduceObj = curry (f, init, o) ->
+# 	ret = cloneShallow init
+# 	callF = (v, k) -> ret = f(ret, k, v)
+# 	mapObjIndexed callF, o
+# 	return ret
+
+
+# ((a, k, v) -> a) -> a -> o -> a
+# Modeled after https://clojuredocs.org/clojure.core/reduce-kv
+# NOTE: there is a caviat with this: https://github.com/ramda/ramda/issues/1067
+foldObj = curry (f, init, o) ->
+	callF = (acc, [k, v]) -> f acc, k, v
+	return reduce callF, init, toPairs(o)
+yfoldObj = curry (o, init, f) -> foldObj f, init, o
 
 # {k:[a, b]} -> o -> o1
 # If k exists in o, evolves with b. If not, merges a.
@@ -307,19 +333,26 @@ clamp = curry (a, b, x) -> Math.min b, Math.max(a, x)
 # ----------------------------------------------------------------------------------------------------------
 # CONVENIENCE STUFF
 # ----------------------------------------------------------------------------------------------------------
-# every function from ramda flipped :)
 flipAllAndPrependY = compose fromPairs, map(adjust(add('y'), 0)), toPairs, mapObjIndexed(flip)
+
 ramdaFlipped = flipAllAndPrependY R
 
+flippable = {getPath, mapIndexed, pickOr, mergeOrEvolve, evolveAll, diff,
+change, fits, pickRec}
 
-exports = {maxIn, minIn, mapIndexed, getPath, cc, ccp, mergeMany,
-toStr, pickOr, isThenable, isIterable, composeP2, fail, reduceObj, mergeOrEvolve,
-evolveAll, clamp, isNotNil, diff, change, changedPaths, fits}
+nonFlippable = {maxIn, minIn, mapIndexed, cc, ccp, mergeMany, isThenable,
+isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp}
 
-exportsFlipped = flipAllAndPrependY {pickOr, mergeOrEvolve, evolveAll, diff,
-change, fits, clamp}
+manuallyFlipped = {foldObj, yfoldObj}
 
-module.exports = mergeMany exports, exportsFlipped, ramdaFlipped
+
+module.exports = mergeAll [
+	ramdaFlipped,
+	flippable,
+	flipAllAndPrependY(flippable), 
+	nonFlippable,
+	manuallyFlipped
+]
 	
 
 

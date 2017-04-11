@@ -1,7 +1,7 @@
 assert = require 'assert'
 {__, append, assoc, dissoc, empty, evolve, flip, gt, inc, isNil, merge, remove, replace, set, test, values} = R = require 'ramda' #auto_require:ramda
 
-{diff, change, changedPaths, fits} = require './ramda-extras'
+{diff, change, changedPaths, fits, pickRec} = require './ramda-extras'
 
 eq = flip assert.strictEqual
 deepEq = flip assert.deepEqual
@@ -336,17 +336,29 @@ describe 'fits', ->
 		eq false, res
 
 
+describe 'pickRec', ->
+	it 'shallow', ->
+		res = pickRec ['a', 'b'], {a: 1, b: 2, c: 3}
+		deepEq {a: 1, b: 2}, res
 
+	it 'two levels', ->
+		res = pickRec ['a.a1', 'b'], {a: {a1: 1, a2: 2}, b: 2, c: 3}
+		deepEq {a: {a1: 1}, b: 2}, res
 
+	it 'three levels', ->
+		obj = {a: {a1: {a11: 1, a12: 2, a13: 3}, a2: 2}, b: 2, c: 3}
+		res = pickRec ['a.a1.a12', 'a.a1.a13', 'b'], obj
+		deepEq {a: {a1: {a12: 2, a13: 3}}, b: 2}, res
 
+	it 'missing', ->
+		obj = {a: {a1: {a11: 1, a12: 2}, a2: 2}, b: 2, c: 3}
+		res = pickRec ['a.a1.a12', 'a.a1.a13', 'b'], obj
+		deepEq {a: {a1: {a12: 2}}, b: 2}, res
 
-
-
-
-
-
-
-		 
+	it 'empty', ->
+		obj = {a: {a1: {a11: 1, a12: 2}, a2: 2}, b: 2, c: 3}
+		res = pickRec [], obj
+		deepEq {}, res
 
 
 
