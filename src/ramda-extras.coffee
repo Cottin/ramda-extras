@@ -52,7 +52,7 @@ pickRec = (paths, o) ->
 	# group paths by first key in path and remove that first key in the paths
 	grouped = cc map(reject(isEmpty)), map(map(drop(1))), groupBy(head), paths_
 
-	return yfoldObj grouped, {}, (acc, k, v) ->
+	return superFlip(foldObj) grouped, {}, (acc, k, v) ->
 		if ! has k, o then acc
 		else if isEmpty v then assoc k, o[k], acc
 		else assoc k, pickRec(v, o[k]), acc
@@ -81,7 +81,6 @@ isIterable = (o) -> !isNil(o) && typeof o[Symbol.iterator] == 'function'
 foldObj = curry (f, init, o) ->
 	callF = (acc, [k, v]) -> f acc, k, v
 	return reduce callF, init, toPairs(o)
-yfoldObj = curry (o, init, f) -> foldObj f, init, o
 
 # {k:[a, b]} -> o -> o1
 # If k exists in o, evolves with b. If not, merges a.
@@ -307,6 +306,17 @@ fail = (f) ->
 	f2._fail = true
 	return f2
 
+# f -> f
+# Like ramdas flip but for fns with 3 args, flips the first and third args
+# instead of first and second.
+# e.g. 	flip(reduce)([1,2], 0, add)
+# 				throws TypeError: reduce: list must be array or iterable
+#				superFlip(reduce)([1,2], 0, add)
+#					returns 3
+superFlip = (f) ->
+	if f.length == 3 then curry (a, b, c) -> f c, b, a
+	else flip f
+
 
 
 # ----------------------------------------------------------------------------------------------------------
@@ -333,25 +343,22 @@ clamp = curry (a, b, x) -> Math.min b, Math.max(a, x)
 # ----------------------------------------------------------------------------------------------------------
 # CONVENIENCE STUFF
 # ----------------------------------------------------------------------------------------------------------
-flipAllAndPrependY = compose fromPairs, map(adjust(add('y'), 0)), toPairs, mapObjIndexed(flip)
+flipAllAndPrependY = compose fromPairs, map(adjust(add('y'), 0)), toPairs, mapObjIndexed(superFlip)
 
 ramdaFlipped = flipAllAndPrependY R
 
 flippable = {getPath, mapIndexed, pickOr, mergeOrEvolve, evolveAll, diff,
-change, fits, pickRec}
+change, fits, pickRec, foldObj}
 
 nonFlippable = {maxIn, minIn, mapIndexed, cc, ccp, mergeMany, isThenable,
-isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp}
-
-manuallyFlipped = {foldObj, yfoldObj}
+isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp, superFlip}
 
 
 module.exports = mergeAll [
 	ramdaFlipped,
 	flippable,
 	flipAllAndPrependY(flippable), 
-	nonFlippable,
-	manuallyFlipped
+	nonFlippable
 ]
 	
 

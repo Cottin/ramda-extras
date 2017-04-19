@@ -1,7 +1,7 @@
 assert = require 'assert'
-{__, append, assoc, dissoc, empty, evolve, flip, gt, inc, isNil, merge, remove, replace, set, test, values} = R = require 'ramda' #auto_require:ramda
+{__, add, append, assoc, dissoc, empty, evolve, flip, gt, inc, isNil, merge, reduce, remove, replace, set, test, values} = R = require 'ramda' #auto_require:ramda
 
-{diff, change, changedPaths, fits, pickRec} = require './ramda-extras'
+{diff, change, changedPaths, fits, pickRec, superFlip} = require './ramda-extras'
 
 eq = flip assert.strictEqual
 deepEq = flip assert.deepEqual
@@ -360,5 +360,10 @@ describe 'pickRec', ->
 		res = pickRec [], obj
 		deepEq {}, res
 
+describe 'superFlip', ->
+	it '2 args', ->
+		deepEq {a: 1}, superFlip(merge)({a: 1}, {a: 2})
 
+	it '3 args', ->
+		eq 3, superFlip(reduce)([1,2], 0, add)
 
