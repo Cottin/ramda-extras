@@ -1,9 +1,10 @@
 assert = require 'assert'
 {__, add, append, assoc, dissoc, empty, evolve, flip, gt, inc, isNil, merge, reduce, remove, replace, set, test, values} = R = require 'ramda' #auto_require:ramda
 
-{diff, change, changedPaths, fits, pickRec, superFlip} = require './ramda-extras'
+{diff, change, changedPaths, fits, pickRec, superFlip, doto} = require './ramda-extras'
 
 eq = flip assert.strictEqual
+neq = flip assert.notStrictEqual
 deepEq = flip assert.deepEqual
 
 describe 'diff', ->
@@ -367,3 +368,6 @@ describe 'superFlip', ->
 	it '3 args', ->
 		eq 3, superFlip(reduce)([1,2], 0, add)
 
+describe 'doto', ->
+	it 'simple case', ->
+		eq 5, doto(2, add(1), add(2))

@@ -1,4 +1,4 @@
-{__, add, addIndex, adjust, always, assoc, both, call, clone, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, dissocPath, drop, either, empty, equals, evolve, flip, fromPairs, groupBy, has, head, init, intersection, into, isEmpty, isNil, keys, last, lensPath, map, mapObjIndexed, max, merge, mergeAll, min, over, path, pick, pickAll, pickBy, pluck, prop, reduce, reduceRight, reject, remove, split, sum, test, toPairs, type, union, where, without} = R = require 'ramda' #auto_require:ramda
+{__, add, addIndex, adjust, always, assoc, both, call, clone, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, dissocPath, drop, either, empty, equals, evolve, flip, fromPairs, groupBy, has, head, init, intersection, into, isEmpty, isNil, keys, last, lensPath, map, mapObjIndexed, max, merge, mergeAll, min, over, path, pick, pickAll, pickBy, pipe, pluck, prop, reduce, reduceRight, reject, remove, split, sum, test, toPairs, type, union, where, without} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -113,7 +113,7 @@ evolveAll = (spec, data) ->
 # Returns the asymetric difference between a and b as an object.
 # You can think of it as "what changes do I have to make to a in order to get b".
 # Keys in b not in a are included in the result
-# Keys in a not in be are included as {k: undefined} in the result
+# Keys in a not in b are included as {k: undefined} in the result
 # Keys in both a and b that has a different value in b are included in the result
 # Keys in both a and b that have the same value are not included in the result
 # Handles nested data structures.
@@ -306,6 +306,10 @@ fail = (f) ->
 	f2._fail = true
 	return f2
 
+
+# similar to https://clojuredocs.org/clojure.core/doto
+doto = (data, functions...) -> pipe(functions...)(data)
+
 # f -> f
 # Like ramdas flip but for fns with 3 args, flips the first and third args
 # instead of first and second.
@@ -350,7 +354,7 @@ ramdaFlipped = flipAllAndPrependY R
 flippable = {getPath, mapIndexed, pickOr, mergeOrEvolve, evolveAll, diff,
 change, fits, pickRec, foldObj}
 
-nonFlippable = {maxIn, minIn, mapIndexed, cc, ccp, mergeMany, isThenable,
+nonFlippable = {maxIn, minIn, mapIndexed, cc, ccp, doto, mergeMany, isThenable,
 isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp, superFlip}
 
 
