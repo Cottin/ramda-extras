@@ -185,6 +185,9 @@ _resolveIfNeeded = (o) ->
 # Takes a spec object with changes and applies them recursively to a.
 # The spec argument is compatible with the result of the diff-function.
 change = curry (spec, a) ->
+	# support a "deleting" spec
+	if spec == undefined then return undefined
+
 	newA = a
 	keysSpec = keys spec
 	if has '$assoc', spec then return spec.$assoc

@@ -116,6 +116,10 @@ describe 'change', ->
 		res = change {a: (x) -> if isNil(x) then 1 else inc}, {}
 		deepEq {a: 1}, res
 
+	it 'undefined at root', ->
+		res = change undefined, {a: 1}
+		eq undefined, res
+
 	it 'reuses values from spec', ->
 		a = {a: null, b2: 3}
 		delta = {a: [1, 2, 3]}
