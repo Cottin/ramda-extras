@@ -350,9 +350,9 @@ clamp = curry (a, b, x) -> Math.min b, Math.max(a, x)
 # ----------------------------------------------------------------------------------------------------------
 # CONVENIENCE STUFF
 # ----------------------------------------------------------------------------------------------------------
-flipAllAndPrependY = compose fromPairs, map(adjust(add('y'), 0)), toPairs, mapObjIndexed(superFlip)
+flipAllAndPrependF = compose fromPairs, map(adjust(add('f'), 0)), toPairs, mapObjIndexed(superFlip)
 
-ramdaFlipped = flipAllAndPrependY R
+ramdaFlipped = flipAllAndPrependF R
 
 flippable = {getPath, mapIndexed, pickOr, mergeOrEvolve, evolveAll, diff,
 change, fits, pickRec, foldObj}
@@ -364,7 +364,7 @@ isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp, superFlip}
 module.exports = mergeAll [
 	ramdaFlipped,
 	flippable,
-	flipAllAndPrependY(flippable), 
+	flipAllAndPrependF(flippable), 
 	nonFlippable
 ]
 	

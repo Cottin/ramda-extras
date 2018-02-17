@@ -5,7 +5,7 @@ assert = require 'assert'
 
 eq = flip assert.strictEqual
 neq = flip assert.notStrictEqual
-deepEq = flip assert.deepEqual
+deepEq = flip assert.deepStrictEqual
 
 describe 'diff', ->
 	it 'missing', ->

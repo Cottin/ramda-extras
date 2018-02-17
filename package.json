@@ -1,6 +1,6 @@
 {
   "name": "ramda-extras",
-  "version": "0.2.17",
+  "version": "0.2.18",
   "description": "Some few functions I feel was missing in ramda",
   "main": "lib/ramda-extras.js",
   "scripts": {
@@ -23,6 +23,6 @@
     "rimraf": "^2.4.3"
   },
   "dependencies": {
-    "ramda": "^0.19.1"
+    "ramda": "^0.25.0"
   }
 }
