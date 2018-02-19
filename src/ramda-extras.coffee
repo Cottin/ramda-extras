@@ -1,4 +1,4 @@
-{__, add, addIndex, adjust, always, assoc, both, call, clone, complement, compose, composeP, concat, contains, curry, dec, difference, dissoc, dissocPath, drop, either, empty, equals, evolve, flip, fromPairs, groupBy, has, head, init, intersection, into, isEmpty, isNil, keys, last, lensPath, map, mapObjIndexed, max, merge, mergeAll, min, over, path, pick, pickAll, pickBy, pipe, pluck, prop, reduce, reduceRight, reject, remove, split, sum, test, toPairs, type, union, where, without} = R = require 'ramda' #auto_require:ramda
+{__, add, addIndex, adjust, assoc, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensPath, map, mapObjIndexed, max, merge, mergeAll, min, o, over, path, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -350,7 +350,9 @@ clamp = curry (a, b, x) -> Math.min b, Math.max(a, x)
 # ----------------------------------------------------------------------------------------------------------
 # CONVENIENCE STUFF
 # ----------------------------------------------------------------------------------------------------------
-flipAllAndPrependF = compose fromPairs, map(adjust(add('f'), 0)), toPairs, mapObjIndexed(superFlip)
+prependF = (s) -> 'f'+s
+flipAllAndPrependF = compose fromPairs, map(adjust(prependF, 0)), toPairs,
+mapObjIndexed(superFlip)
 
 ramdaFlipped = flipAllAndPrependF R
 

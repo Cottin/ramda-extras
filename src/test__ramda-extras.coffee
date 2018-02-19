@@ -1,7 +1,7 @@
 assert = require 'assert'
-{__, add, append, assoc, dissoc, empty, evolve, flip, gt, inc, isNil, merge, reduce, remove, replace, set, test, values} = R = require 'ramda' #auto_require:ramda
+{__, add, append, assoc, dissoc, empty, evolve, flip, gt, inc, isNil, merge, o, reduce, remove, replace, set, type, values} = R = require 'ramda' #auto_require:ramda
 
-{diff, change, changedPaths, fits, pickRec, superFlip, doto} = require './ramda-extras'
+{diff, change, changedPaths, fits, pickRec, superFlip, doto} = RE = require './ramda-extras'
 
 eq = flip assert.strictEqual
 neq = flip assert.notStrictEqual
@@ -375,3 +375,9 @@ describe 'superFlip', ->
 describe 'doto', ->
 	it 'simple case', ->
 		eq 5, doto(2, add(1), add(2))
+
+describe 'fliped stuff', ->
+	it 'simple cases', ->
+		eq 'function1', type RE.freduce
+		eq 'function2', type RE.fdoto
+
