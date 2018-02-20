@@ -1,4 +1,4 @@
-{__, add, addIndex, adjust, assoc, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensPath, map, mapObjIndexed, max, merge, mergeAll, min, o, over, path, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union} = R = require 'ramda' #auto_require:ramda
+{__, addIndex, adjust, assoc, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensPath, map, mapObjIndexed, max, merge, mergeAll, min, over, path, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -11,6 +11,14 @@ getPath = curry (path, o) ->
 	pathToUse = if R.is(String, path) then split('.', path) else path
 	return R.path pathToUse, o
 
+# ----------------------------------------------------------------------------------------------------------
+# STRING
+# ----------------------------------------------------------------------------------------------------------
+
+# [a], [a], ... -> [a, a, ...]
+# concats many lists into one
+sprepend = curry (s, t) -> s + t
+sappend = curry (s, t) -> t + s
 
 # ----------------------------------------------------------------------------------------------------------
 # LIST
@@ -236,10 +244,10 @@ changedPaths = (delta) ->
 				if has '$assoc', v then paths.push k
 				else if has '$dissoc', v then paths.push k + '.' + v['$dissoc']
 				else if has '$merge', v
-					mergeKeys = cc map(add("#{k}.")), keys, v['$merge']
+					mergeKeys = cc map(sprepend("#{k}.")), keys, v['$merge']
 					paths.push mergeKeys...
 				else
-					nestedPaths = map add("#{k}."), changedPaths(v)
+					nestedPaths = map sprepend("#{k}."), changedPaths(v)
 					paths = concat paths, nestedPaths
 			when 'RegExp'
 				throw new Error 'changedPaths does not support RegExp in either a or b'
@@ -360,7 +368,8 @@ flippable = {getPath, mapIndexed, pickOr, mergeOrEvolve, evolveAll, diff,
 change, fits, pickRec, foldObj}
 
 nonFlippable = {maxIn, minIn, mapIndexed, cc, ccp, doto, mergeMany, isThenable,
-isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp, superFlip}
+isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp, superFlip,
+sappend, sprepend}
 
 
 module.exports = mergeAll [

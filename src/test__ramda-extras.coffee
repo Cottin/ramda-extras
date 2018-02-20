@@ -1,11 +1,13 @@
-assert = require 'assert'
-{__, add, append, assoc, dissoc, empty, evolve, flip, gt, inc, isNil, merge, o, reduce, remove, replace, set, type, values} = R = require 'ramda' #auto_require:ramda
+{__, add, append, assoc, dissoc, empty, evolve, gt, inc, isNil, merge, reduce, remove, replace, set, type, values} = R = require 'ramda' #auto_require:ramda
+{eq, deepEq} = require 'testhelp' #auto_require:testhelp
 
-{diff, change, changedPaths, fits, pickRec, superFlip, doto} = RE = require './ramda-extras'
+{diff, change, changedPaths, fits, pickRec, superFlip, doto, sappend, sprepend} = RE = require './ramda-extras'
 
-eq = flip assert.strictEqual
-neq = flip assert.notStrictEqual
-deepEq = flip assert.deepStrictEqual
+
+describe 'sappend', ->
+	it 'simple', -> eq 'abcde', sappend('cde', 'ab')
+describe 'sprepend', ->
+	it 'simple', -> eq 'abcde', sprepend('ab', 'cde')
 
 describe 'diff', ->
 	it 'missing', ->
@@ -39,7 +41,7 @@ describe 'diff', ->
 		end = new Date().getTime()
 		total = end - start
 		console.log 'performance:' + total
-		eq true, total < 1
+		eq true, total < 10 # sanity check 10 ms so we're not adding crazy stuff
 
 	describe 'nested', ->
 		it 'missing', ->
@@ -89,7 +91,7 @@ describe 'diff', ->
 			end = new Date().getTime()
 			total = end - start
 			console.log 'performance:' + total
-			eq true, total < 1
+			eq true, total < 10 # sanity check 10 ms so we're not adding crazy stuff
 
 describe 'change', ->
 	it 'merge number', ->
@@ -378,6 +380,6 @@ describe 'doto', ->
 
 describe 'fliped stuff', ->
 	it 'simple cases', ->
-		eq 'function1', type RE.freduce
-		eq 'function2', type RE.fdoto
+		eq 'Function', type RE.freduce
+		eq 'Function', type RE.ffits
 
