@@ -118,6 +118,10 @@ describe 'change', ->
 		res = change {a: (x) -> if isNil(x) then 1 else inc}, {}
 		deepEq {a: 1}, res
 
+	it 'evolve if using function but dont create key on undefined value', ->
+		res = change {a: (x) -> if isNil(x) then undefined else inc}, {b: 2}
+		deepEq {b: 2}, res
+
 	it 'undefined at root', ->
 		res = change undefined, {a: 1}
 		eq undefined, res

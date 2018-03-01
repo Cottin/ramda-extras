@@ -208,8 +208,8 @@ change = curry (spec, a) ->
 			when 'Array', 'Null', 'String', 'Number', 'Boolean'
 				newA = assoc k, v, newA
 			when 'Function'
-				if ! has k, newA then newA[k] = null
-				newA = evolve {"#{k}": v}, newA
+				newV = v(newA[k])
+				if newV != undefined then newA = assoc k, newV, newA
 			when 'Object'
 				if isNil(a[k]) || type(a[k]) != 'Object'
 					v_ = _resolveIfNeeded v
