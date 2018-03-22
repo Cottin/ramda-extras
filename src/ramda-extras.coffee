@@ -1,4 +1,4 @@
-{__, addIndex, adjust, assoc, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensPath, map, mapObjIndexed, max, merge, mergeAll, min, over, path, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union} = R = require 'ramda' #auto_require:ramda
+{__, addIndex, adjust, anyPass, assoc, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensPath, map, mapObjIndexed, max, merge, mergeAll, min, over, path, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -340,6 +340,8 @@ superFlip = (f) ->
 
 isNotNil = complement isNil
 
+isNilOrEmpty = anyPass [isNil, isEmpty]
+
 
 # ----------------------------------------------------------------------------------------------------------
 # STRING
@@ -369,7 +371,7 @@ change, fits, pickRec, foldObj}
 
 nonFlippable = {maxIn, minIn, mapIndexed, cc, ccp, doto, mergeMany, isThenable,
 isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp, superFlip,
-sappend, sprepend}
+sappend, sprepend, isNilOrEmpty}
 
 
 module.exports = mergeAll [

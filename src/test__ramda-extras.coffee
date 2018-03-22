@@ -1,8 +1,16 @@
 {__, add, append, assoc, dissoc, empty, evolve, gt, inc, isNil, merge, reduce, remove, replace, set, type, values} = R = require 'ramda' #auto_require:ramda
 {eq, deepEq} = require 'testhelp' #auto_require:testhelp
 
-{diff, change, changedPaths, fits, pickRec, superFlip, doto, sappend, sprepend} = RE = require './ramda-extras'
+{isNilOrEmpty, diff, change, changedPaths, fits, pickRec, superFlip, doto, sappend, sprepend} = RE = require './ramda-extras'
 
+describe 'isNilOrEmpty', ->
+	it 'simple', ->
+		eq false, isNilOrEmpty(' ')
+		eq true, isNilOrEmpty('')
+		eq false, isNilOrEmpty([1])
+		eq true, isNilOrEmpty([])
+		eq false, isNilOrEmpty({a: 1})
+		eq true, isNilOrEmpty({})
 
 describe 'sappend', ->
 	it 'simple', -> eq 'abcde', sappend('cde', 'ab')
