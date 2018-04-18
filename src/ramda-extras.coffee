@@ -1,4 +1,4 @@
-{__, addIndex, adjust, anyPass, assoc, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensPath, map, mapObjIndexed, max, merge, mergeAll, min, over, path, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union} = R = require 'ramda' #auto_require:ramda
+{__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, findIndex, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensIndex, lensPath, map, mapObjIndexed, match, max, merge, mergeAll, min, over, path, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union, values, whereEq} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -189,6 +189,7 @@ _resolveIfNeeded = (o) ->
 	mapObjIndexed resolve, o
 	return o_
 
+
 # o -> o -> o
 # Takes a spec object with changes and applies them recursively to a.
 # The spec argument is compatible with the result of the diff-function.
@@ -202,6 +203,7 @@ change = curry (spec, a) ->
 
 	for k in keysSpec
 		v = spec[k]
+
 		switch type v
 			when 'Undefined'
 				newA = dissoc k, newA
@@ -211,7 +213,7 @@ change = curry (spec, a) ->
 				newV = v(newA[k])
 				if newV != undefined then newA = assoc k, newV, newA
 			when 'Object'
-				if isNil(a[k]) || type(a[k]) != 'Object'
+				if isNil(a[k])# || type(a[k]) != 'Object'
 					v_ = _resolveIfNeeded v
 					newA = assoc k, v_, newA
 				else if isEmpty v # no need to recurse
@@ -220,6 +222,17 @@ change = curry (spec, a) ->
 				else if has '$dissoc', v then newA = dissocPath [k, v['$dissoc']], newA
 				else if has '$merge', v
 					newA = over lensPath([k]), merge(__, v['$merge']), newA
+				else if doto v, keys, head, test /\$\d+/
+					spec_ = doto v, values, head
+					idx = doto v, keys, head, match(/\$(\d+)/), prop(1), parseInt
+					v_ = over lensIndex(idx), change(spec_), newA[k]
+					newA = assoc k, v_, newA
+				else if doto v, keys, head, test /\$id_(.*)/
+					spec_ = doto v, values, head
+					id = doto v, keys, head, match(/\$id_(.*)/), prop(1)
+					idx = findIndex(whereEq({id}), newA[k])
+					v_ = over lensIndex(idx), change(spec_), newA[k]
+					newA = assoc k, v_, newA
 				else
 					v_ = change v, a[k]
 					newA = assoc k, v_, newA
@@ -290,6 +303,9 @@ fits = curry (spec, o) ->
 #				# ... we can leave them out:
 #				myTotalBalance = cc sum, pluck('balance'), accounts
 cc = (functions..., data) -> compose(functions...)(data)
+cc_ = (functions..., data) -> compose_(functions...)(data)
+
+
 
 # as cc but handling thenables
 ccp = (functions..., data) -> composeP(functions...)(data)
@@ -320,6 +336,24 @@ fail = (f) ->
 
 # similar to https://clojuredocs.org/clojure.core/doto
 doto = (data, functions...) -> pipe(functions...)(data)
+doto_ = (data, functions...) -> pipe_(functions...)(data)
+
+compose_ = (functions...) ->
+	log = (x) ->
+		console.log x
+		return x
+	withLogs = chain ((f) -> [log, f]), functions
+	withLogs.push log
+	compose withLogs...
+
+pipe_ = (functions...) ->
+	log = (x) ->
+		console.log x
+		return x
+	withLogs = chain ((f) -> [log, f]), functions
+	withLogs.push log
+	pipe withLogs...
+
 
 # f -> f
 # Like ramdas flip but for fns with 3 args, flips the first and third args
@@ -369,9 +403,10 @@ ramdaFlipped = flipAllAndPrependF R
 flippable = {getPath, mapIndexed, pickOr, mergeOrEvolve, evolveAll, diff,
 change, fits, pickRec, foldObj}
 
-nonFlippable = {maxIn, minIn, mapIndexed, cc, ccp, doto, mergeMany, isThenable,
-isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp, superFlip,
-sappend, sprepend, isNilOrEmpty}
+nonFlippable = {maxIn, minIn, mapIndexed, cc, cc_, ccp, compose_, doto, doto_,
+pipe_, mergeMany,
+isThenable, isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp,
+superFlip, sappend, sprepend, isNilOrEmpty}
 
 
 module.exports = mergeAll [

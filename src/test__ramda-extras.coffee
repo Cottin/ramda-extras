@@ -1,7 +1,7 @@
 {__, add, append, assoc, dissoc, empty, evolve, gt, inc, isNil, merge, reduce, remove, replace, set, type, values} = R = require 'ramda' #auto_require:ramda
-{eq, deepEq} = require 'testhelp' #auto_require:testhelp
+{eq, eq_, deepEq} = require 'testhelp' #auto_require:testhelp
 
-{isNilOrEmpty, diff, change, changedPaths, fits, pickRec, superFlip, doto, sappend, sprepend} = RE = require './ramda-extras'
+{isNilOrEmpty, diff, change, changedPaths, fits, pickRec, superFlip, doto, doto_, cc, cc_, sappend, sprepend} = RE = require './ramda-extras'
 
 describe 'isNilOrEmpty', ->
 	it 'simple', ->
@@ -234,6 +234,27 @@ describe 'change', ->
 			res = change delta, a
 			eq a111_, res.a.a1.a11.a111
 
+		it '$[index]', ->
+			a = {a: [{a1: 1, a2: 1}, {a1: 2, a2: 2}], b2: 3}
+			delta = {a: {$1: {a2: inc}}}
+			res = change delta, a
+			eq_ 3, res.a[1].a2
+
+		it '$id:[key]', ->
+			a = {a: [{id: 'z', a1: 1, a2: 1}, {id: 'y', a1: 2, a2: 2}], b2: 3}
+			delta = {a: {$id_y: {a2: inc}}}
+			res = change delta, a
+			console.log 'res', res
+			eq_ 3, res.a[1].a2
+
+		it '$id:[key] int', ->
+			a = {a: [{id: 1, a1: 1, a2: 1}, {id: 2, a1: 2, a2: 2}], b2: 3}
+			delta = {a: {$id_2: {a2: inc}}}
+			res = change delta, a
+			console.log 'res', res
+			eq_ 3, res.a[1].a2
+
+
 		describe 'nested one more level', ->
 			it 'merge number', ->
 				a = {a: {a1: {a11: 0, a12: 1}, a2: 0}, b2: 3}
@@ -389,6 +410,16 @@ describe 'superFlip', ->
 describe 'doto', ->
 	it 'simple case', ->
 		eq 5, doto(2, add(1), add(2))
+
+	it 'with log', ->
+		eq 5, doto_(2, add(1), add(2))
+
+describe 'cc', ->
+	it 'simple case', ->
+		eq 7, cc( add(1), add(2), 4)
+
+	it 'with log', ->
+		eq 7, cc_(add(1), add(2), 4)
 
 describe 'fliped stuff', ->
 	it 'simple cases', ->
