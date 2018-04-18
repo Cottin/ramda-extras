@@ -230,7 +230,11 @@ change = curry (spec, a) ->
 				else if doto v, keys, head, test /\$_(.*)=(.*)/
 					spec_ = doto v, values, head
 					[_, path, val] = doto v, keys, head, match /\$_(.*)=(.*)/
-					idx = findIndex(pathEq(path, val), newA[k])
+					idx = findIndex(pathEq(split('.', path), val), newA[k])
+					if idx == -1 && !isNaN(parseInt(val))
+						idx = findIndex(pathEq(split('.', path), parseInt(val)), newA[k])
+					if idx == -1
+						throw new Error "ramda-extra.change: no path like #{path}=#{val}"
 					v_ = over lensIndex(idx), change(spec_), newA[k]
 					newA = assoc k, v_, newA
 				else
