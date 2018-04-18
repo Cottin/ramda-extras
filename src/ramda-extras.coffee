@@ -1,4 +1,4 @@
-{__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, findIndex, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensIndex, lensPath, map, mapObjIndexed, match, max, merge, mergeAll, min, over, path, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union, values, whereEq} = R = require 'ramda' #auto_require:ramda
+{__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, findIndex, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensIndex, lensPath, map, mapObjIndexed, match, max, merge, mergeAll, min, over, path, pathEq, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union, values} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -227,10 +227,10 @@ change = curry (spec, a) ->
 					idx = doto v, keys, head, match(/\$(\d+)/), prop(1), parseInt
 					v_ = over lensIndex(idx), change(spec_), newA[k]
 					newA = assoc k, v_, newA
-				else if doto v, keys, head, test /\$id_(.*)/
+				else if doto v, keys, head, test /\$_(.*)=(.*)/
 					spec_ = doto v, values, head
-					id = doto v, keys, head, match(/\$id_(.*)/), prop(1)
-					idx = findIndex(whereEq({id}), newA[k])
+					[_, path, val] = doto v, keys, head, match /\$_(.*)=(.*)/
+					idx = findIndex(pathEq(path, val), newA[k])
 					v_ = over lensIndex(idx), change(spec_), newA[k]
 					newA = assoc k, v_, newA
 				else
