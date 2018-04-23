@@ -211,7 +211,8 @@ change = curry (spec, a) ->
 				newA = assoc k, v, newA
 			when 'Function'
 				newV = v(newA[k])
-				if newV != undefined then newA = assoc k, newV, newA
+				if newV == undefined then newA = dissoc k, newA
+				else newA = assoc k, newV, newA
 			when 'Object'
 				if isNil(a[k])# || type(a[k]) != 'Object'
 					v_ = _resolveIfNeeded v

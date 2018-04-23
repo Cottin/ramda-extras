@@ -130,6 +130,12 @@ describe 'change', ->
 		res = change {a: (x) -> if isNil(x) then undefined else inc}, {b: 2}
 		deepEq {b: 2}, res
 
+	it 'undefined in function = "fancy toggle"', ->
+		res = change {a: (x) -> if x then undefined else true}, {b: 2}
+		deepEq {a: true, b: 2}, res
+		res = change {a: (x) -> if x then undefined else true}, {a: true, b: 2}
+		deepEq {b: 2}, res
+
 	it 'undefined at root', ->
 		res = change undefined, {a: 1}
 		eq undefined, res
