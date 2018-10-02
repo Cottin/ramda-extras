@@ -1,4 +1,4 @@
-{__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, findIndex, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensIndex, lensPath, map, mapObjIndexed, match, max, merge, mergeAll, min, over, path, pathEq, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union, values} = R = require 'ramda' #auto_require:ramda
+{__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, findIndex, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensIndex, lensPath, map, mapObjIndexed, match, max, merge, mergeAll, min, over, path, pathEq, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union} = R = require 'ramda' #auto_require:ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -224,21 +224,27 @@ change = curry (spec, a) ->
 				else if has '$dissoc', v then newA = dissocPath [k, v['$dissoc']], newA
 				else if has '$merge', v
 					newA = over lensPath([k]), merge(__, v['$merge']), newA
+
 				else if doto v, keys, head, test /\$\d+/
-					spec_ = doto v, values, head
-					idx = doto v, keys, head, match(/\$(\d+)/), prop(1), parseInt
-					v_ = over lensIndex(idx), change(spec_), newA[k]
+					v_ = newA[k]
+					for $i, spec_ of v
+						idx = doto $i, match(/\$(\d+)/), prop(1), parseInt
+						v_ = over lensIndex(idx), change(spec_), v_
 					newA = assoc k, v_, newA
+
 				else if doto v, keys, head, test /\$_(.*)=(.*)/
-					spec_ = doto v, values, head
-					[_, path, val] = doto v, keys, head, match /\$_(.*)=(.*)/
-					idx = findIndex(pathEq(split('.', path), val), newA[k])
-					if idx == -1 && !isNaN(parseInt(val))
-						idx = findIndex(pathEq(split('.', path), parseInt(val)), newA[k])
-					if idx == -1
-						throw new Error "ramda-extra.change: no path like #{path}=#{val}"
-					v_ = over lensIndex(idx), change(spec_), newA[k]
+					v_ = newA[k]
+					for $k, spec_ of v
+						[_, path, val] = doto $k, match /\$_(.*)=(.*)/
+						idx = findIndex(pathEq(split('.', path), val), newA[k])
+						if idx == -1 && !isNaN(parseInt(val))
+							idx = findIndex(pathEq(split('.', path), parseInt(val)), newA[k])
+						if idx == -1
+							throw new Error "ramda-extra.change: no path like #{path}=#{val}"
+						v_ = over lensIndex(idx), change(spec_), v_
+
 					newA = assoc k, v_, newA
+
 				else
 					v_ = change v, a[k]
 					newA = assoc k, v_, newA

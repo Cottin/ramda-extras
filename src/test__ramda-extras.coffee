@@ -1,5 +1,5 @@
 {__, add, append, assoc, dissoc, empty, evolve, gt, inc, isNil, merge, reduce, remove, replace, set, type, values} = R = require 'ramda' #auto_require:ramda
-{eq, eq_, deepEq} = require 'testhelp' #auto_require:testhelp
+{eq, deepEq} = require 'testhelp' #auto_require:testhelp
 
 {isNilOrEmpty, diff, change, changedPaths, fits, pickRec, superFlip, doto, doto_, cc, cc_, sappend, sprepend} = RE = require './ramda-extras'
 
@@ -244,13 +244,20 @@ describe 'change', ->
 			a = {a: [{a1: 1, a2: 1}, {a1: 2, a2: 2}], b2: 3}
 			delta = {a: {$1: {a2: inc}}}
 			res = change delta, a
-			eq_ 3, res.a[1].a2
+			eq 3, res.a[1].a2
 
 		it '$[index] null', ->
 			a = {a: [{a1: 1, a2: 1}, {a1: 2, a2: 2}], b2: 3}
 			delta = {a: {$1: null}}
 			res = change delta, a
-			eq_ null, res.a[1]
+			eq null, res.a[1]
+
+		it '$[index] multiple', ->
+			a = {a: [{a1: 1, a2: 1}, {a1: 2, a2: 2}], b2: 3}
+			delta = {a: {$0: {a1: inc}, $1: {a2: inc}}}
+			res = change delta, a
+			eq 2, res.a[0].a1
+			eq 3, res.a[1].a2
 
 		it '$_id:[key]', ->
 			a = {a: [{id: 'x', a1: 0, a2: 0},
@@ -258,7 +265,7 @@ describe 'change', ->
 								{id: 'z', a1: 9, a2: 9}], b2: 3}
 			delta = {a: {'$_id=y': {a2: inc}}}
 			res = change delta, a
-			eq_ 3, res.a[1].a2
+			eq 3, res.a[1].a2
 
 		it '$_id:[key] null', ->
 			a = {a: [{id: 'x', a1: 0, a2: 0},
@@ -266,7 +273,7 @@ describe 'change', ->
 								{id: 'z', a1: 9, a2: 9}], b2: 3}
 			delta = {a: {'$_id=y': null}}
 			res = change delta, a
-			eq_ null, res.a[1]
+			eq null, res.a[1]
 
 		it '$_id:[key] int', ->
 			a = {a: [{id: 1, a1: 0, a2: 0},
@@ -274,7 +281,16 @@ describe 'change', ->
 								{id: 3, a1: 9, a2: 9}], b2: 3}
 			delta = {a: {'$_id=2': {a2: inc}}}
 			res = change delta, a
-			eq_ 3, res.a[1].a2
+			eq 3, res.a[1].a2
+
+		it '$_id:[key] multiple', ->
+			a = {a: [{id: 'x', a1: 0, a2: 0},
+								{id: 'y', a1: 2, a2: 2},
+								{id: 'z', a1: 9, a2: 9}], b2: 3}
+			delta = {a: {'$_id=y': {a2: inc}, '$_id=z': {a1: inc}}}
+			res = change delta, a
+			eq 3, res.a[1].a2
+			eq 10, res.a[2].a1
 
 		it '$_node.id:[key]', ->
 			a = {a: [{node: {id: 'x'}, a1: 0, a2: 0},
@@ -282,7 +298,7 @@ describe 'change', ->
 								{node: {id: 'z'}, a1: 9, a2: 9}], b2: 3}
 			delta = {a: {'$_node.id=y': {a2: inc}}}
 			res = change delta, a
-			eq_ 3, res.a[1].a2
+			eq 3, res.a[1].a2
 
 		it '$_node.id:[key] null', ->
 			a = {a: [{node: {id: 'x'}, a1: 0, a2: 0},
@@ -290,7 +306,16 @@ describe 'change', ->
 								{node: {id: 'z'}, a1: 9, a2: 9}], b2: 3}
 			delta = {a: {'$_node.id=y': null}}
 			res = change delta, a
-			eq_ null, res.a[1]
+			eq null, res.a[1]
+
+		it '$_node.id:[key] multiple', ->
+			a = {a: [{node: {id: 'x'}, a1: 0, a2: 0},
+								{node: {id: 'y'}, a1: 2, a2: 2},
+								{node: {id: 'z'}, a1: 9, a2: 9}], b2: 3}
+			delta = {a: {'$_node.id=y': {a2: inc}, '$_node.id=z': {a1: inc}}}
+			res = change delta, a
+			eq 3, res.a[1].a2
+			eq 10, res.a[2].a1
 
 
 		describe 'nested one more level', ->
