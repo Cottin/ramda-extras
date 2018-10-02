@@ -196,6 +196,7 @@ _resolveIfNeeded = (o) ->
 change = curry (spec, a) ->
 	# support a "deleting" spec
 	if spec == undefined then return undefined
+	else if spec == null then return null # continuation for $ cases
 
 	newA = a
 	keysSpec = keys spec

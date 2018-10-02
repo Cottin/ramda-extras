@@ -246,6 +246,12 @@ describe 'change', ->
 			res = change delta, a
 			eq_ 3, res.a[1].a2
 
+		it '$[index] null', ->
+			a = {a: [{a1: 1, a2: 1}, {a1: 2, a2: 2}], b2: 3}
+			delta = {a: {$1: null}}
+			res = change delta, a
+			eq_ null, res.a[1]
+
 		it '$_id:[key]', ->
 			a = {a: [{id: 'x', a1: 0, a2: 0},
 								{id: 'y', a1: 2, a2: 2},
@@ -253,6 +259,14 @@ describe 'change', ->
 			delta = {a: {'$_id=y': {a2: inc}}}
 			res = change delta, a
 			eq_ 3, res.a[1].a2
+
+		it '$_id:[key] null', ->
+			a = {a: [{id: 'x', a1: 0, a2: 0},
+								{id: 'y', a1: 2, a2: 2},
+								{id: 'z', a1: 9, a2: 9}], b2: 3}
+			delta = {a: {'$_id=y': null}}
+			res = change delta, a
+			eq_ null, res.a[1]
 
 		it '$_id:[key] int', ->
 			a = {a: [{id: 1, a1: 0, a2: 0},
@@ -269,6 +283,14 @@ describe 'change', ->
 			delta = {a: {'$_node.id=y': {a2: inc}}}
 			res = change delta, a
 			eq_ 3, res.a[1].a2
+
+		it '$_node.id:[key] null', ->
+			a = {a: [{node: {id: 'x'}, a1: 0, a2: 0},
+								{node: {id: 'y'}, a1: 2, a2: 2},
+								{node: {id: 'z'}, a1: 9, a2: 9}], b2: 3}
+			delta = {a: {'$_node.id=y': null}}
+			res = change delta, a
+			eq_ null, res.a[1]
 
 
 		describe 'nested one more level', ->

@@ -1,6 +1,6 @@
 {
   "name": "ramda-extras",
-  "version": "0.2.26",
+  "version": "0.2.27",
   "description": "Some few functions I feel was missing in ramda",
   "main": "lib/ramda-extras.js",
   "scripts": {
