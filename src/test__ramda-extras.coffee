@@ -1,7 +1,7 @@
 {__, add, append, assoc, dissoc, empty, evolve, gt, inc, isNil, merge, reduce, remove, replace, set, type, values} = R = require 'ramda' #auto_require:ramda
 {eq, deepEq} = require 'testhelp' #auto_require:testhelp
 
-{isNilOrEmpty, diff, change, changedPaths, fits, pickRec, superFlip, doto, doto_, cc, cc_, sappend, sprepend} = RE = require './ramda-extras'
+{isNilOrEmpty, diff, change, changedPaths, fits, pickRec, toPair, superFlip, doto, doto_, cc, cc_, sappend, sprepend} = RE = require './ramda-extras'
 
 describe 'isNilOrEmpty', ->
 	it 'simple', ->
@@ -16,6 +16,10 @@ describe 'sappend', ->
 	it 'simple', -> eq 'abcde', sappend('cde', 'ab')
 describe 'sprepend', ->
 	it 'simple', -> eq 'abcde', sprepend('ab', 'cde')
+
+describe 'object', ->
+	it 'toPair', ->
+		deepEq ['a', 1], toPair {a: 1}
 
 describe 'diff', ->
 	it 'missing', ->

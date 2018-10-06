@@ -43,6 +43,10 @@ mapIndexed = addIndex map
 # OBJECT
 # ----------------------------------------------------------------------------------------------------------
 
+# {k: v} -> [k, v]   # Converts an object with only one key and one value to a pair
+toPair = (o) -> toPairs(o)[0]
+
+
 # like http://ramdajs.com/docs/#pickAll but instead of undefined it returns the value of the key in the first argument
 pickOr = (keysAndDefaults, o) ->
 	picked = pickAll keys(keysAndDefaults), o
@@ -415,7 +419,7 @@ ramdaFlipped = flipAllAndPrependF R
 flippable = {getPath, mapIndexed, pickOr, mergeOrEvolve, evolveAll, diff,
 change, fits, pickRec, foldObj}
 
-nonFlippable = {maxIn, minIn, mapIndexed, cc, cc_, ccp, compose_, doto, doto_,
+nonFlippable = {toPair, maxIn, minIn, mapIndexed, cc, cc_, ccp, compose_, doto, doto_,
 pipe_, mergeMany,
 isThenable, isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp,
 superFlip, sappend, sprepend, isNilOrEmpty}
