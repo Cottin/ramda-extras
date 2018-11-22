@@ -353,6 +353,8 @@ fail = (f) ->
 # similar to https://clojuredocs.org/clojure.core/doto
 doto = (data, functions...) -> pipe(functions...)(data)
 doto_ = (data, functions...) -> pipe_(functions...)(data)
+$ = doto # trying out a new alias
+$_ = doto_ # trying out a new alias
 
 compose_ = (functions...) ->
 	log = (x) ->
@@ -420,7 +422,7 @@ flippable = {getPath, mapIndexed, pickOr, mergeOrEvolve, evolveAll, diff,
 change, fits, pickRec, foldObj}
 
 nonFlippable = {toPair, maxIn, minIn, mapIndexed, cc, cc_, ccp, compose_, doto, doto_,
-pipe_, mergeMany,
+$, $_, pipe_, mergeMany,
 isThenable, isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp,
 superFlip, sappend, sprepend, isNilOrEmpty}
 
