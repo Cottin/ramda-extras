@@ -1,4 +1,4 @@
-{__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, findIndex, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensIndex, lensPath, map, mapObjIndexed, match, max, merge, mergeAll, min, over, path, pathEq, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union} = R = require 'ramda' #auto_require:ramda
+{__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, findIndex, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensIndex, lensPath, map, mapObjIndexed, match, max, merge, mergeAll, min, over, path, pathEq, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union} = R = require 'ramda' #auto_require: ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -10,6 +10,8 @@
 getPath = curry (path, o) ->
 	pathToUse = if R.is(String, path) then split('.', path) else path
 	return R.path pathToUse, o
+
+mapO = mapObjIndexed
 
 # ----------------------------------------------------------------------------------------------------------
 # STRING
@@ -419,7 +421,7 @@ mapObjIndexed(superFlip)
 ramdaFlipped = flipAllAndPrependF R
 
 flippable = {getPath, mapIndexed, pickOr, mergeOrEvolve, evolveAll, diff,
-change, fits, pickRec, foldObj}
+change, fits, pickRec, foldObj, mapO}
 
 nonFlippable = {toPair, maxIn, minIn, mapIndexed, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, pipe_, mergeMany,
