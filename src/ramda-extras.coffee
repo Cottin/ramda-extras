@@ -358,6 +358,11 @@ doto_ = (data, functions...) -> pipe_(functions...)(data)
 $ = doto # trying out a new alias
 $_ = doto_ # trying out a new alias
 
+dotoCompose = (data, functions...) -> compose(functions...)(data)
+dotoCompose_ = (data, functions...) -> compose_(functions...)(data)
+$$ = dotoCompose # trying out a new alias
+$$_ = dotoCompose_ # trying out a new alias
+
 compose_ = (functions...) ->
 	log = (x) ->
 		console.log x
@@ -424,7 +429,7 @@ flippable = {getPath, mapIndexed, pickOr, mergeOrEvolve, evolveAll, diff,
 change, fits, pickRec, foldObj, mapO}
 
 nonFlippable = {toPair, maxIn, minIn, mapIndexed, cc, cc_, ccp, compose_, doto, doto_,
-$, $_, pipe_, mergeMany,
+$, $_, $$, $$_, pipe_, mergeMany,
 isThenable, isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp,
 superFlip, sappend, sprepend, isNilOrEmpty}
 
