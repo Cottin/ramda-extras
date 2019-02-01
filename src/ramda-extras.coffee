@@ -386,7 +386,7 @@ pipe_ = (functions...) ->
 # http://bluebirdjs.com/docs/api/promise.props.html
 # https://stackoverflow.com/questions/44600771/equivalent-of-bluebird-promise-props-for-es6-promises
 # https://stackoverflow.com/a/50437423/416797
-PromiseProp = (o) -> zipObj keys(o), await Promise.all values(o)
+PromiseProps = (o) -> zipObj keys(o), await Promise.all values(o)
 
 
 # f -> f
@@ -440,7 +440,7 @@ change, fits, pickRec, foldObj, mapO}
 nonFlippable = {toPair, maxIn, minIn, mapIndexed, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, $$, $$_, pipe_, mergeMany,
 isThenable, isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp,
-superFlip, sappend, sprepend, isNilOrEmpty, PromiseProp}
+superFlip, sappend, sprepend, isNilOrEmpty, PromiseProps}
 
 
 module.exports = mergeAll [

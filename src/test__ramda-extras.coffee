@@ -1,7 +1,7 @@
 {__, add, append, assoc, dissoc, empty, evolve, gt, inc, isNil, merge, reduce, remove, replace, set, type, values} = R = require 'ramda' #auto_require:ramda
 {eq, deepEq} = require 'testhelp' #auto_require:testhelp
 
-{isNilOrEmpty, diff, change, changedPaths, fits, pickRec, toPair, superFlip, doto, doto_, $$, $$_, cc, cc_, sappend, sprepend, PromiseProp} = RE = require './ramda-extras'
+{isNilOrEmpty, diff, change, changedPaths, fits, pickRec, toPair, superFlip, doto, doto_, $$, $$_, cc, cc_, sappend, sprepend, PromiseProps} = RE = require './ramda-extras'
 
 describe 'isNilOrEmpty', ->
 	it 'simple', ->
@@ -488,18 +488,18 @@ describe 'dotoCompose', ->
 	it 'with log', ->
 		deepEq [1, 2, 3], $$_([1], append(3), append(2))
 
-describe 'PromiseProp', ->
+describe 'PromiseProps', ->
 	# https://stackoverflow.com/a/45286517/416797
 	reso = (ms) -> new Promise (rs, rj) -> setTimeout (() ->rs(1)), ms
 	reje = (ms) -> new Promise (rs, rj) -> setTimeout (() ->rj(666)), ms
 
 	it 'simple success', ->
-		res = await PromiseProp({a: reso(10), b: reso(5)})
+		res = await PromiseProps({a: reso(10), b: reso(5)})
 		deepEq {a: 1, b: 1}, res
 
 	it 'simple reject', ->
 		try
-			res = await PromiseProp({a: reso(10), b: reje(5)})
+			res = await PromiseProps({a: reso(10), b: reje(5)})
 		catch err
 			eq 666, err
 
