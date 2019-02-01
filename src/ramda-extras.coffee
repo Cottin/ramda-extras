@@ -1,4 +1,4 @@
-{__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, findIndex, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensIndex, lensPath, map, mapObjIndexed, match, max, merge, mergeAll, min, over, path, pathEq, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union} = R = require 'ramda' #auto_require: ramda
+{__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, findIndex, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensIndex, lensPath, map, mapObjIndexed, match, max, merge, mergeAll, min, over, path, pathEq, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union, values, zipObj} = R = require 'ramda' #auto_require: ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -380,6 +380,15 @@ pipe_ = (functions...) ->
 	pipe withLogs...
 
 
+# There is native Promise.all for arrays but no equivalent for objects/maps.
+# Bluebird has Promise.prop but if you don't want to add that dependency here is an unfancy version
+# of that. Don't know how well it handles edge cases and performance but seems decent enough.
+# http://bluebirdjs.com/docs/api/promise.props.html
+# https://stackoverflow.com/questions/44600771/equivalent-of-bluebird-promise-props-for-es6-promises
+# https://stackoverflow.com/a/50437423/416797
+PromiseProp = (o) -> zipObj keys(o), await Promise.all values(o)
+
+
 # f -> f
 # Like ramdas flip but for fns with 3 args, flips the first and third args
 # instead of first and second.
@@ -431,7 +440,7 @@ change, fits, pickRec, foldObj, mapO}
 nonFlippable = {toPair, maxIn, minIn, mapIndexed, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, $$, $$_, pipe_, mergeMany,
 isThenable, isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp,
-superFlip, sappend, sprepend, isNilOrEmpty}
+superFlip, sappend, sprepend, isNilOrEmpty, PromiseProp}
 
 
 module.exports = mergeAll [
