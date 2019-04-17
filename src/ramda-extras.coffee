@@ -442,7 +442,7 @@ _qq = (s, o, spaces) ->
 		console.log '######## ' + s
 		console.log sf2 o
 
-qq0 = (s, o) -> __qq s, o, 0
+qq0 = (s, o) -> _qq s, o, 0
 
 qq2 = (s, o) -> _qq s, o, 2
 
