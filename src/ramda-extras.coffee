@@ -435,16 +435,16 @@ _sify = (k, v) ->
 sf0 = (o) -> JSON.stringify o, _sify, 0
 sf2 = (o) -> JSON.stringify o, _sify, 2
 
-_qq = (s, o, spaces) ->
+_q = (s, o, spaces) ->
 	if type(o) == 'Promise' then console.log '######## ' + s, '[Promise]'
 	else if type(o) == 'Function' then console.log '######## ' + s, '[Function]'
 	else
 		console.log '######## ' + s
 		console.log sf2 o
 
-qq0 = (s, o) -> _qq s, o, 0
+qq = (s, o) -> _q s, o, 0
 
-qq2 = (s, o) -> _qq s, o, 2
+qqq = (s, o) -> _q s, o, 2
 
 
 # ----------------------------------------------------------------------------------------------------------
