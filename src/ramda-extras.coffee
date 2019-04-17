@@ -424,6 +424,28 @@ toStr = (a) -> a + ''
 
 clamp = curry (a, b, x) -> Math.min b, Math.max(a, x)
 
+# ----------------------------------------------------------------------------------------------------------
+# DEV HELPERS (should't really be in ramda-extras but... laziness)
+# ----------------------------------------------------------------------------------------------------------
+_sify = (k, v) ->
+	if v == undefined then '__UNDEFINED__'
+	else if type(v) == 'Function' then '[Function]'
+	else v
+
+sf0 = (o) -> JSON.stringify o, _sify, 0
+sf2 = (o) -> JSON.stringify o, _sify, 2
+
+_qq = (s, o, spaces) ->
+	if type(o) == 'Promise' then console.log '######## ' + s, '[Promise]'
+	else if type(o) == 'Function' then console.log '######## ' + s, '[Function]'
+	else
+		console.log '######## ' + s
+		console.log sf2 o
+
+qq0 = (s, o) -> __qq s, o, 0
+
+qq2 = (s, o) -> _qq s, o, 2
+
 
 # ----------------------------------------------------------------------------------------------------------
 # CONVENIENCE STUFF
@@ -440,7 +462,7 @@ change, fits, pickRec, foldObj, mapO}
 nonFlippable = {toPair, maxIn, minIn, mapIndexed, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, $$, $$_, pipe_, mergeMany,
 isThenable, isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp,
-superFlip, sappend, sprepend, isNilOrEmpty, PromiseProps}
+superFlip, sappend, sprepend, isNilOrEmpty, PromiseProps, sf0, sf2, qq0, qq2}
 
 
 module.exports = mergeAll [
