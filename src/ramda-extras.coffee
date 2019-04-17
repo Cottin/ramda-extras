@@ -462,7 +462,7 @@ change, fits, pickRec, foldObj, mapO}
 nonFlippable = {toPair, maxIn, minIn, mapIndexed, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, $$, $$_, pipe_, mergeMany,
 isThenable, isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp,
-superFlip, sappend, sprepend, isNilOrEmpty, PromiseProps, sf0, sf2, qq0, qq2}
+superFlip, sappend, sprepend, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq}
 
 
 module.exports = mergeAll [
