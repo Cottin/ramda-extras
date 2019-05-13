@@ -1,4 +1,4 @@
-{__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, findIndex, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, keys, last, lensIndex, lensPath, map, mapObjIndexed, match, max, merge, mergeAll, min, over, path, pathEq, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, split, test, toPairs, type, union, values, zipObj} = R = require 'ramda' #auto_require: ramda
+{__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, findIndex, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, join, keys, last, lensIndex, lensPath, map, mapObjIndexed, match, max, merge, mergeAll, min, over, path, pathEq, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, repeat, split, test, toPairs, type, union, values, zipObj} = R = require 'ramda' #auto_require: ramda
 
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
@@ -435,11 +435,15 @@ _sify = (k, v) ->
 sf0 = (o) -> JSON.stringify o, _sify, 0
 sf2 = (o) -> JSON.stringify o, _sify, 2
 
-_q = (s, o, spaces) ->
-	if type(o) == 'Promise' then console.log '######## ' + s, '[Promise]'
-	else if type(o) == 'Function' then console.log '######## ' + s, '[Function]'
+_q = (_s, o, spaces) ->
+	pounds = '######## '
+	if 'Number' == type _s then s = pounds + $ _s+'', repeat(__, 10), join('')
+	else s = pounds + _s
+
+	if type(o) == 'Promise' then console.log s, '[Promise]'
+	else if type(o) == 'Function' then console.log s, '[Function]'
 	else
-		console.log '######## ' + s
+		console.log s
 		console.log sf2 o
 
 qq = (s, o) -> _q s, o, 0
