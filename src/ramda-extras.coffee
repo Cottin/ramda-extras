@@ -437,7 +437,7 @@ sf2 = (o) -> JSON.stringify o, _sify, 2
 
 _q = (_s, o, spaces) ->
 	pounds = '######## '
-	if 'Number' == type _s then s = pounds + $ _s+'', repeat(__, 10), join('')
+	if 'Number' == type _s then s = pounds + $ _s+'', repeat(__, 60), join('')
 	else s = pounds + _s
 
 	if type(o) == 'Promise' then console.log s, '[Promise]'
