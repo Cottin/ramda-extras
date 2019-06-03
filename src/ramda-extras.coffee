@@ -1,5 +1,12 @@
 {__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, concat, contains, curry, difference, dissoc, dissocPath, drop, either, equals, evolve, findIndex, flip, fromPairs, groupBy, has, head, init, intersection, isEmpty, isNil, join, keys, last, lensIndex, lensPath, map, mapObjIndexed, match, max, merge, mergeAll, min, over, path, pathEq, pick, pickAll, pickBy, pipe, prop, reduce, reduceRight, reject, repeat, split, test, toPairs, type, union, values, zipObj} = R = require 'ramda' #auto_require: ramda
 
+class NotYetImplementedError extends Error
+	constructor: (msg) ->
+		super msg
+		@name = NotYetImplementedError
+		Error.captureStackTrace this, NotYetImplementedError
+NYIE = NotYetImplementedError
+
 # ----------------------------------------------------------------------------------------------------------
 # ALIASES
 # ----------------------------------------------------------------------------------------------------------
@@ -194,6 +201,38 @@ _resolveIfNeeded = (o) ->
 
 	mapObjIndexed resolve, o
 	return o_
+
+
+# Like change but mutates the original object
+changeM = curry (spec, a) ->
+	if spec == undefined then throw new Error 'setting root not supported'
+	else if spec == null then throw new Error 'setting root not supported'
+
+	for k, vs of spec
+		va = a[k]
+		switch type vs
+			when 'Undefined'
+				delete a[k]
+			when 'Array', 'Null', 'String', 'Number', 'Boolean'
+				a[k] = vs
+			when 'Function'
+				newV = vs va
+				if newV == undefined then delete a[k]
+				else a[k] = newV
+			when 'Object'
+				if isNil va # || type(a[k]) != 'Object'
+					a[k] = vs
+				else if isEmpty vs # no need to recurse
+					a[k] = vs
+				else if has '$assoc', vs then throw new NYIE
+				else if has '$dissoc', vs then throw new NYIE
+				else if has '$merge', vs then throw new NYIE
+				else if doto vs, keys, head, test /\$\d+/ then throw new NYIE
+				else if doto vs, keys, head, test /\$_(.*)=(.*)/ then throw new NYIE
+				else
+					a[k] = change vs, va
+			else
+				throw new NYIE
 
 
 # o -> o -> o
@@ -461,7 +500,7 @@ mapObjIndexed(superFlip)
 ramdaFlipped = flipAllAndPrependF R
 
 flippable = {getPath, mapIndexed, pickOr, mergeOrEvolve, evolveAll, diff,
-change, fits, pickRec, foldObj, mapO}
+change, changeM, fits, pickRec, foldObj, mapO}
 
 nonFlippable = {toPair, maxIn, minIn, mapIndexed, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, $$, $$_, pipe_, mergeMany,
