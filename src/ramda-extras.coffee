@@ -46,6 +46,7 @@ maxIn = reduce max, -Infinity
 minIn = reduce min, Infinity
 
 mapIndexed = addIndex map
+mapI = mapIndexed
 
 
 # ----------------------------------------------------------------------------------------------------------
@@ -476,7 +477,7 @@ sf2 = (o) -> JSON.stringify o, _sify, 2
 
 _q = (_s, o, spaces) ->
 	pounds = '######## '
-	if 'Number' == type _s then s = pounds + $ _s+'', repeat(__, 60), join('')
+	if 'Number' == type _s then s = pounds + $ _s+'', repeat(__, 50), join('')
 	else s = pounds + _s
 
 	if type(o) == 'Promise' then console.log s, '[Promise]'
@@ -499,7 +500,7 @@ mapObjIndexed(superFlip)
 
 ramdaFlipped = flipAllAndPrependF R
 
-flippable = {getPath, mapIndexed, pickOr, mergeOrEvolve, evolveAll, diff,
+flippable = {getPath, mapIndexed, mapI, pickOr, mergeOrEvolve, evolveAll, diff,
 change, changeM, fits, pickRec, foldObj, mapO}
 
 nonFlippable = {toPair, maxIn, minIn, mapIndexed, cc, cc_, ccp, compose_, doto, doto_,
