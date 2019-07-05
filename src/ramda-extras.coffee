@@ -20,6 +20,7 @@ getPath = curry (path, o) ->
 
 mapO = mapObjIndexed
 
+
 # ----------------------------------------------------------------------------------------------------------
 # STRING
 # ----------------------------------------------------------------------------------------------------------
@@ -97,12 +98,15 @@ isIterable = (o) -> !isNil(o) && typeof o[Symbol.iterator] == 'function'
 # 	return ret
 
 
+
 # ((a, k, v) -> a) -> a -> o -> a
 # Modeled after https://clojuredocs.org/clojure.core/reduce-kv
 # NOTE: there is a caviat with this: https://github.com/ramda/ramda/issues/1067
 foldObj = curry (f, init, o) ->
 	callF = (acc, [k, v]) -> f acc, k, v
 	return reduce callF, init, toPairs(o)
+
+foldO = foldObj
 
 # {k:[a, b]} -> o -> o1
 # If k exists in o, evolves with b. If not, merges a.
@@ -363,6 +367,10 @@ fits = curry (spec, o) ->
 cc = (functions..., data) -> compose(functions...)(data)
 cc_ = (functions..., data) -> compose_(functions...)(data)
 
+arg0 = (f) -> (a0) -> f a0
+arg1 = (f) -> (a0, a1) -> f a1
+arg2 = (f) -> (a0, a1, a2) -> f a2
+
 
 
 # as cc but handling thenables
@@ -496,17 +504,17 @@ qqq = (s, o) -> _q s, o, 2
 # ----------------------------------------------------------------------------------------------------------
 prependF = (s) -> 'f'+s
 flipAllAndPrependF = compose fromPairs, map(adjust(prependF, 0)), toPairs,
-mapObjIndexed(superFlip)
+mapObjIndexed(flip)
 
 ramdaFlipped = flipAllAndPrependF R
 
 flippable = {getPath, mapIndexed, mapI, pickOr, mergeOrEvolve, evolveAll, diff,
-change, changeM, fits, pickRec, foldObj, mapO}
+change, changeM, fits, pickRec, foldObj, mapO, foldO}
 
 nonFlippable = {toPair, maxIn, minIn, mapIndexed, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, $$, $$_, pipe_, mergeMany,
 isThenable, isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp,
-superFlip, sappend, sprepend, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq}
+superFlip, sappend, sprepend, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq, arg0, arg1, arg2}
 
 
 module.exports = mergeAll [
