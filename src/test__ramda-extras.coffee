@@ -1,7 +1,7 @@
 {__, add, append, assoc, curry, dissoc, empty, evolve, gt, inc, isNil, merge, reduce, reject, remove, replace, set, type, values} = R = require 'ramda' #auto_require: ramda
 {eq, deepEq} = require 'testhelp' #auto_require:testhelp
 
-{isNilOrEmpty, diff, change, changeM, changedPaths, fits, pickRec, toPair, superFlip, doto, doto_, $$, $$_, cc, cc_, sappend, sprepend, PromiseProps} = RE = require './ramda-extras'
+{undef, isNilOrEmpty, diff, change, changeM, changedPaths, fits, pickRec, toPair, superFlip, doto, doto_, $$, $$_, cc, cc_, sappend, sprepend, PromiseProps} = RE = require './ramda-extras'
 
 describe 'isNilOrEmpty', ->
 	it 'simple', ->
@@ -485,6 +485,10 @@ describe 'doto', ->
 
 	it 'with log', ->
 		eq 5, doto_(2, add(1), add(2))
+
+describe 'undef', ->
+	it '1', ->
+		eq undefined, undef(-> 1)()
 
 describe 'dotoCompose', ->
 	it 'simple case', ->

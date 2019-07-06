@@ -212,6 +212,8 @@ _resolveIfNeeded = (o) ->
 changeM = curry (spec, a) ->
 	if spec == undefined then throw new Error 'setting root not supported'
 	else if spec == null then throw new Error 'setting root not supported'
+	else if isNil a then throw new Error 'changeM requires a to not be nil'
+	else if 'Object' != type a then throw new Error 'changeM reqires a to be object'
 
 	for k, vs of spec
 		va = a[k]
@@ -371,6 +373,12 @@ arg0 = (f) -> (a0) -> f a0
 arg1 = (f) -> (a0, a1) -> f a1
 arg2 = (f) -> (a0, a1, a2) -> f a2
 
+# Wraps a function for later calling and then returning undefined.
+# Good to use with immer since CoffeeScript returns something by default.
+undef = (f) ->
+	() ->
+		f ...arguments
+		return undefined
 
 
 # as cc but handling thenables
@@ -514,7 +522,7 @@ change, changeM, fits, pickRec, foldObj, mapO, foldO}
 nonFlippable = {toPair, maxIn, minIn, mapIndexed, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, $$, $$_, pipe_, mergeMany,
 isThenable, isIterable, changedPaths, composeP2, fail, isNotNil, toStr, clamp,
-superFlip, sappend, sprepend, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq, arg0, arg1, arg2}
+superFlip, sappend, sprepend, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq, arg0, arg1, arg2, undef}
 
 
 module.exports = mergeAll [
