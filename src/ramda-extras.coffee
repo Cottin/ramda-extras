@@ -529,7 +529,8 @@ module.exports = mergeAll [
 	ramdaFlipped,
 	flippable,
 	flipAllAndPrependF(flippable), 
-	nonFlippable
+	nonFlippable,
+	{version: '0.3.2'}
 ]
 	
 
