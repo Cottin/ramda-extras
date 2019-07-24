@@ -287,7 +287,7 @@ module.exports = mergeAll [
 	flippable,
 	flipAllAndPrependF(flippable), 
 	nonFlippable,
-	{version: '0.3.2'}
+	{version: '0.4.0'}
 ]
 	
 
