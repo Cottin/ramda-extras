@@ -250,9 +250,9 @@ _q = (_s, spaces, xs) ->
 	else s = pounds + _s
 
 	xs2 = flip(map) xs, (x) ->
-		if 'Promise' == type o then '[Promise]'
-		else if 'Function' == type o then '[Function]'
-		else JSON.stringify o, _sify, spaces
+		if 'Promise' == type x then '[Promise]'
+		else if 'Function' == type x then '[Function]'
+		else JSON.stringify x, _sify, spaces
 
 	console.log s
 	console.log ...xs2

@@ -1,7 +1,7 @@
 {add, append, empty, evolve, inc, isNil, merge, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
 {eq, deepEq} = require 'testhelp' #auto_require: testhelp
 
-{undef, isNilOrEmpty, change, changeM, isAffected, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps} = RE = require './ramda-extras'
+{undef, isNilOrEmpty, change, changeM, isAffected, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps, qq, qqq} = RE = require './ramda-extras'
 
 describe 'isNilOrEmpty', ->
 	it 'simple', ->
@@ -200,3 +200,7 @@ describe 'fliped stuff', ->
 	it 'simple cases', ->
 		eq 'Function', type RE.freduce
 
+describe 'qq', ->
+	it 'simple cases', ->
+		eq undefined, qq 1, 1
+		eq undefined, qqq 1, 1
