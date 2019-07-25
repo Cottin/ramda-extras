@@ -1,7 +1,7 @@
 {add, append, empty, evolve, inc, isNil, merge, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
-{eq, deepEq} = require 'testhelp' #auto_require: testhelp
+{eq, deepEq, throws} = require 'testhelp' #auto_require: testhelp
 
-{undef, isNilOrEmpty, change, changeM, isAffected, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps, qq, qqq} = RE = require './ramda-extras'
+{undef, isNilOrEmpty, change, changeM, isAffected, diff, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps, qq, qqq} = RE = require './ramda-extras'
 
 describe 'isNilOrEmpty', ->
 	it 'simple', ->
@@ -123,6 +123,82 @@ describe 'isAffected', ->
 
 	it 'deep false', ->
 		eq false, isAffected {a: {a1: {a11: {a111: null}}}}, {a: {a1: {a11: {a112: undefined}}}}
+
+describe 'diff', ->
+	it 'missing', ->
+		res = diff {ab: 1}, {}
+		deepEq {ab: undefined}, res
+
+	it 'extra', ->
+		res = diff {}, {ab: 1}
+		deepEq {ab: 1}, res
+
+	it 'changed', ->
+		res = diff {ab: 1}, {ab: 2}
+		deepEq {ab: 2}, res
+
+	it 'no change value', ->
+		res = diff {ab: true}, {ab: true}
+		deepEq {}, res
+
+	it 'no change array', ->
+		res = diff {ab: [1, 2]}, {ab: [1, 2]}
+		deepEq {}, res
+
+	it 'reuses values from b', ->
+		a = {ab: null}
+		b = {ab: [1, 2, 3]}
+		res = diff a, b
+		eq b.ab, res.ab
+
+	describe 'nested', ->
+		it 'extra empty', ->
+			res = diff {a: null}, {a: {}}
+			deepEq {a: {}}, res
+
+		it 'missing', ->
+			res = diff {a: {a1: 1}}, {a: {}}
+			deepEq {a: {a1: undefined}}, res
+
+		it 'extra', ->
+			res = diff {a: {}, b: {b1: 1}}, {a: {a1: 1}, b: {b1: 1}}
+			deepEq {a: {a1: 1}}, res
+
+		it 'changed', ->
+			a = {a: {a1: 1, a2: 0}, b: {b1: 1}}
+			b = {a: {a1: 2, a2: 0}, b: {b1: 1}}
+			res = diff a, b
+			deepEq {a: {a1: 2}}, res
+
+		it 'no change', ->
+			a = {a: {a1: 1, a2: 0}, b: {b1: 1}}
+			b = {a: {a1: 1, a2: 0}, b: {b1: 1}}
+			res = diff a, b
+			deepEq {}, res
+
+		it 'changed to object in b', ->
+			a = {a: {a1: 1, a2: 0}, b: {b1: 1}}
+			b = {a: {a1: {a11: 1}, a2: 0}, b: {b1: 1}}
+			res = diff a, b
+			deepEq {a: {a1: {a11: 1}}}, res
+
+		it 'changed to object in b from array', ->
+			a = {a: {a1: ['a11', 'a12'], a2: 0}, b: {b1: 1}}
+			b = {a: {a1: {a11: 1}, a2: 0}, b: {b1: 1}}
+			res = diff a, b
+			deepEq {a: {a1: {a11: 1}}}, res
+
+		it 'reuses values from b', ->
+			a = {a: {a1: 1, a2: 0}, b: {b1: 1}}
+			b = {a: {a1: {a11: 1}, a2: 0}, b: {b1: 1}}
+			res = diff a, b
+			eq b.a.a1, res.a.a1
+
+		it 'function', ->
+			throws /diff does not support functions/, -> diff {a: {a1: 1}}, {a: {a1: ->}}
+
+		it 'RegExp', ->
+			throws /diff does not support RegExps/, -> diff {a: {a1: 1}}, {a: {a1: /a/}}
 
 
 describe 'pickRec', ->

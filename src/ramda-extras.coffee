@@ -1,4 +1,4 @@
-{__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, curry, drop, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, join, keys, map, mapObjIndexed, max, mergeAll, min, pickAll, pipe, prop, reduce, reject, repeat, split, toPairs, type, values, zipObj} = R = require 'ramda' #auto_require: ramda
+{__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, curry, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, join, keys, map, mapObjIndexed, max, mergeAll, min, pickAll, pipe, prop, reduce, reject, repeat, split, toPairs, type, union, values, zipObj} = R = require 'ramda' #auto_require: ramda
 
 class NotYetImplementedError extends Error
 	constructor: (msg) ->
@@ -113,12 +113,17 @@ _change = (spec, a, undo, total, modify) ->
 
 	return newA
 
+# changes a given spec without modifying a
 change = curry (spec, a) -> _change spec, a, undefined, undefined, false
+
+# like change but modifies a
 changeM = curry (spec, a) -> _change spec, a, undefined, undefined, true
 
+# like change but gives an undo spec and a total spec
 change.meta = curry (spec, a, undo, total) -> _change spec, a, undo, total, false
 changeM.meta = curry (spec, a, undo, total) -> _change spec, a, undo, total, true
 
+# true if deps are affected by total changes
 isAffected = (deps, total) ->
 	for k, v of deps
 		if ! has k, total then continue
@@ -130,6 +135,31 @@ isAffected = (deps, total) ->
 			else throw new Error 'not a valid dependency object'
 
 	return false
+
+# Returns the asymetric difference between a and b
+# You can think of it as "what changes do I have to make to a in order to get b?"
+diff = (l, r) ->
+	res = {}
+	allKeys = union keys(l), keys(r)
+	for k in allKeys
+		if ! has k, l then res[k] = r[k]
+		else if ! has k, r then res[k] = undefined
+		else if l[k] == r[k] then continue
+		else if equals l[k], r[k] then continue
+		else
+			switch type r[k]
+				when 'Undefined' then res[k] = undefined
+				when 'Null', 'String', 'Number', 'Boolean' then res[k] = r[k]
+				when 'Array' then res[k] = r[k]
+				when 'Object'
+					if 'Object' != type l[k] then res[k] = r[k]
+					else res[k] = diff l[k], r[k]
+				when 'Function' then throw new Error('diff does not support functions')
+				when 'RegExp' then throw new Error('diff does not support RegExps')
+
+
+	return res
+
 
 
 # ----------------------------------------------------------------------------------------------------------
@@ -271,7 +301,7 @@ mapObjIndexed(flip)
 
 ramdaFlipped = flipAllAndPrependF R
 
-flippable = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected}
+flippable = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff}
 
 nonFlippable = {maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, $$, $$_, pipe_,
@@ -284,7 +314,7 @@ module.exports = mergeAll [
 	flippable,
 	flipAllAndPrependF(flippable), 
 	nonFlippable,
-	{version: '0.4.0'}
+	{version: '0.4.3'}
 ]
 	
 
