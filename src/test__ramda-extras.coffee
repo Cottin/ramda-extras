@@ -1,7 +1,7 @@
 {add, append, empty, evolve, inc, isNil, merge, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
 {eq, deepEq} = require 'testhelp' #auto_require: testhelp
 
-{undef, isNilOrEmpty, change, changeM, isAffected, pickRec, toPair, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps} = RE = require './ramda-extras'
+{undef, isNilOrEmpty, change, changeM, isAffected, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps} = RE = require './ramda-extras'
 
 describe 'isNilOrEmpty', ->
 	it 'simple', ->
@@ -11,10 +11,6 @@ describe 'isNilOrEmpty', ->
 		eq true, isNilOrEmpty([])
 		eq false, isNilOrEmpty({a: 1})
 		eq true, isNilOrEmpty({})
-
-describe 'object', ->
-	it 'toPair', ->
-		deepEq ['a', 1], toPair {a: 1}
 
 describe 'change', ->
 	changeTester = (spec, a, total) ->

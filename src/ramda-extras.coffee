@@ -33,9 +33,6 @@ mapI = addIndex map
 # OBJECT
 # ----------------------------------------------------------------------------------------------------------
 
-# {k: v} -> [k, v]   # Converts an object with only one key and one value to a pair
-toPair = (o) -> toPairs(o)[0]
-
 # like http://ramdajs.com/docs/#pickAll but instead of undefined it returns the value of the key in the first argument
 pickOr = (keysAndDefaults, o) ->
 	picked = pickAll keys(keysAndDefaults), o
@@ -252,7 +249,7 @@ _q = (_s, spaces, xs) ->
 	if 'Number' == type _s then s = pounds + $ _s+'', repeat(__, 50), join('')
 	else s = pounds + _s
 
-	xs2 = fmap xs, (x) ->
+	xs2 = flip(map) xs, (x) ->
 		if 'Promise' == type o then '[Promise]'
 		else if 'Function' == type o then '[Function]'
 		else JSON.stringify o, _sify, spaces
@@ -276,7 +273,7 @@ ramdaFlipped = flipAllAndPrependF R
 
 flippable = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected}
 
-nonFlippable = {toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_,
+nonFlippable = {maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, $$, $$_, pipe_,
 isThenable, isIterable, isNotNil, toStr, clamp,
 superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq, arg0, arg1, arg2, undef}
@@ -290,4 +287,58 @@ module.exports = mergeAll [
 	{version: '0.4.0'}
 ]
 	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
