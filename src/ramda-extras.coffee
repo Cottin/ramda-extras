@@ -1,4 +1,4 @@
-{__, addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, curry, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, join, keys, map, mapObjIndexed, max, mergeAll, min, pickAll, pipe, prop, reduce, reject, repeat, split, toPairs, type, union, values, zipObj} = R = require 'ramda' #auto_require: ramda
+{addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, curry, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, keys, map, mapObjIndexed, match, max, mergeAll, min, pickAll, pipe, prop, reduce, reject, split, toPairs, type, union, values, zipObj} = R = require 'ramda' #auto_require: ramda
 
 class NotYetImplementedError extends Error
 	constructor: (msg) ->
@@ -32,6 +32,9 @@ mapI = addIndex map
 # ----------------------------------------------------------------------------------------------------------
 # OBJECT
 # ----------------------------------------------------------------------------------------------------------
+
+# {k: v} -> [k, v]   # Converts an object with only one key and one value to a pair
+toPair = (o) -> toPairs(o)[0]
 
 # like http://ramdajs.com/docs/#pickAll but instead of undefined it returns the value of the key in the first argument
 pickOr = (keysAndDefaults, o) ->
@@ -274,22 +277,17 @@ _sify = (k, v) ->
 sf0 = (o) -> JSON.stringify o, _sify, 0
 sf2 = (o) -> JSON.stringify o, _sify, 2
 
-_q = (_s, spaces, xs) ->
-	pounds = '######## '
-	if 'Number' == type _s then s = pounds + $ _s+'', repeat(__, 50), join('')
-	else s = pounds + _s
+_q = (asStr, f) ->
+	if 'Function' != type(f) then return console.warn("q(q) should be called with function not #{f}")
+	fs = f.toString()
+	[___, s] = match /return (.*);/, fs
+	if asStr then console.log s, JSON.stringify(f(), null, 0)
+	else console.log s, f()
 
-	xs2 = flip(map) xs, (x) ->
-		if 'Promise' == type x then '[Promise]'
-		else if 'Function' == type x then '[Function]'
-		else JSON.stringify x, _sify, spaces
+qq = (f) -> _q true, f
 
-	console.log s
-	console.log ...xs2
+qqq = (f) -> _q false, f
 
-qq = (s, ...xs) -> _q s, 0, xs
-
-qqq = (s, ...xs) -> _q s, 2, xs
 
 
 # ----------------------------------------------------------------------------------------------------------
@@ -303,7 +301,7 @@ ramdaFlipped = flipAllAndPrependF R
 
 flippable = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff}
 
-nonFlippable = {maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_,
+nonFlippable = {toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, $$, $$_, pipe_,
 isThenable, isIterable, isNotNil, toStr, clamp,
 superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq, arg0, arg1, arg2, undef}
@@ -314,7 +312,7 @@ module.exports = mergeAll [
 	flippable,
 	flipAllAndPrependF(flippable), 
 	nonFlippable,
-	{version: '0.4.3'}
+	{version: '0.4.4'}
 ]
 	
 
