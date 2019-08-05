@@ -282,12 +282,12 @@ _q = (asStr, f) ->
 	fs = f.toString()
 	[___, s] = match /return (.*);/, fs
 	console.log '' # new line
-	if asStr then console.log s, JSON.stringify(f(), null, 0)
+	if asStr then console.log s, JSON.stringify(f(), null, 2)
 	else console.log s, f()
 
-qq = (f) -> _q true, f
+qq = (f) -> _q false, f
 
-qqq = (f) -> _q false, f
+qqq = (f) -> _q true, f
 
 
 
