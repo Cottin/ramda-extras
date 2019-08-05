@@ -281,6 +281,7 @@ _q = (asStr, f) ->
 	if 'Function' != type(f) then return console.warn("q(q) should be called with function not #{f}")
 	fs = f.toString()
 	[___, s] = match /return (.*);/, fs
+	console.log '' # new line
 	if asStr then console.log s, JSON.stringify(f(), null, 0)
 	else console.log s, f()
 
@@ -312,7 +313,7 @@ module.exports = mergeAll [
 	flippable,
 	flipAllAndPrependF(flippable), 
 	nonFlippable,
-	{version: '0.4.4'}
+	{version: '0.4.5'}
 ]
 	
 
@@ -330,7 +331,7 @@ module.exports = mergeAll [
 
 
 
-
+	
 
 
 
