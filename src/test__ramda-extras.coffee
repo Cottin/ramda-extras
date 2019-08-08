@@ -1,7 +1,7 @@
 {add, append, empty, evolve, inc, isNil, merge, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
 {eq, deepEq, deepEq_, throws} = require 'testhelp' #auto_require: testhelp
 
-{undef, isNilOrEmpty, change, changeM, isAffected, diff, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps, qq, qqq} = RE = require './ramda-extras'
+{undef, isNilOrEmpty, change, changeM, isAffected, diff, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps, qq, qqq, satisfies} = RE = require './ramda-extras'
 
 describe 'isNilOrEmpty', ->
 	it 'simple', ->
@@ -288,3 +288,62 @@ describe 'qq', ->
 	it 'simple cases', ->
 		eq undefined, qq 1, 1
 		eq undefined, qqq 1, 1
+
+describe.only 'satisfies', ->
+	sat = satisfies
+	it 'String', ->
+		deepEq {a: 1}, sat {a: 1}, {a: String}
+		deepEq {}, sat {a: 'a'}, {a: String}
+
+	it 'Number', ->
+		deepEq {a: ''}, sat {a: ''}, {a: Number}
+		deepEq {}, sat {a: 1}, {a: Number}
+
+	it 'Boolean', ->
+		deepEq {a: 0}, sat {a: 0}, {a: Boolean}
+		deepEq {}, sat {a: true}, {a: Boolean}
+
+	it 'Function', ->
+		deepEq {a: 0}, sat {a: 0}, {a: ->}
+		deepEq {}, sat {a: ->}, {a: ->}
+
+	it 'required', ->
+		deepEq {b: 1}, sat {b: 1}, {a: Number}
+		deepEq {}, sat {a: 1}, {a: Number}
+
+	it 'optional', ->
+		deepEq {}, sat {b: 1}, {a〳: Number, b: Number}
+
+	describe 'array', ->
+		it 'String', ->
+			deepEq {a: [1]}, sat {a: [1, '']}, {a: [String]}
+			deepEq {}, sat {a: ['', '2']}, {a: [String]}
+
+		it 'Number', ->
+			deepEq {a: ['']}, sat {a: [1, '']}, {a: [Number]}
+			deepEq {}, sat {a: [1, 2]}, {a: [Number]}
+
+		it 'Boolean', ->
+			deepEq {a: [1]}, sat {a: [1, true]}, {a: [Boolean]}
+			deepEq {}, sat {a: [true, false]}, {a: [Boolean]}
+
+		it 'Number or null', ->
+			deepEq {a: [true]}, sat {a: [true, null]}, {a: [Number, null]}
+			deepEq {}, sat {a: [1, null]}, {a: [Number, null]}
+
+		it 'Object', ->
+			deepEq {a: [{b: 2}]}, sat {a: [{b: '1'}, {b: 2}]}, {a: [{b: String}]}
+			deepEq {}, sat {a: [{b: '1'}, {b: '2'}]}, {a: [{b: String}]}
+
+		it 'Object extra fields', ->
+			deepEq {a: [{b: 2}]}, sat {a: [{b: '1', c: 1}, {b: 2}]}, {a: [{b: String}]}
+			deepEq {}, sat {a: [{b: '1', c: 1}, {b: '2'}]}, {a: [{b: String}]}
+
+		it 'Object or null', ->
+			deepEq {a: [{b: true}]}, sat {a: [{b: true}, null]}, {a: [{b: Number}, null]}
+			deepEq {}, sat {a: [{b: 1}, null]}, {a: [{b: Number}, null]}
+
+	describe 'object', ->
+		it 'String, Number, Boolean', ->
+			deepEq {a: {n: ''}}, sat {a: {s: '', n: '', b: true}}, {a: {s: String, n: Number, b: Boolean}}
+			deepEq {}, sat {a: {s: '', n: 1, b: true}}, {a: {s: String, n: Number, b: Boolean}}

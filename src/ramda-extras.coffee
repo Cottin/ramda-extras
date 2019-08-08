@@ -1,4 +1,5 @@
 {addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, curry, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, keys, map, mapObjIndexed, match, max, mergeAll, min, pickAll, pipe, prop, reduce, reject, split, toPairs, type, union, values, zipObj} = R = require 'ramda' #auto_require: ramda
+[ːBoolean, ːFunction, ːString, ːArray, ːNumber, ːNull, ːObject] = ['Boolean', 'Function', 'String', 'Array', 'Number', 'Null', 'Object'] #auto_sugar
 
 class NotYetImplementedError extends Error
 	constructor: (msg) ->
@@ -251,6 +252,88 @@ customError = (name) ->
 			Error.captureStackTrace this, CustomError
 
 
+# FUNC
+_typeToStr = (t) ->
+	switch t
+		when String then ːString
+		when Number then ːNumber
+		when Boolean then ːBoolean
+		when Array then ːArray
+		when Object then ːObject
+		when null then ːNull
+
+
+satisfies = (o, spec, looseObj = false) ->
+	for k,v of o
+		t = spec[k] || optional = true && spec[k+'〳']
+		if t == undefined && !optional
+			if looseObj then continue
+			else return {[k]: v}
+
+		ts = _typeToStr t
+		if ts == undefined
+
+			if ːFunction == type t
+				if ːFunction != type v then return {[k]: v}
+
+			else if ːObject == type t
+				res = satisfies v, t, true
+				if ! isEmpty res then return {[k]: res}
+
+			else if ːArray == type t
+				# TODO: should probably be able to simplify the array case
+				if t.length == 1
+					elementTypeS = _typeToStr t[0]
+					if elementTypeS == undefined
+						if ːArray == type t[0]
+							throw new Error 'NYI'
+						else if ːObject == type t[0]
+							for el in v
+								res = satisfies el, t[0], true
+								if ! isEmpty res then return {[k]: [res]}
+					else
+						for el in v
+							if elementTypeS != type el then return {[k]: [el]}
+
+				else if t.length == 2
+					elementTypeS0 = _typeToStr t[0]
+					elementTypeS1 = _typeToStr t[1]
+					if elementTypeS0 == undefined
+						if elementTypeS1 == undefined then throw new Error 'NYI'
+						else if ːArray == type t[0] then throw new Error 'NYI'
+						else if ːObject == type t[0]
+							for el in v
+								if ! isEmpty(satisfies(el, t[0], true)) && elementTypeS1 != type el then return {[k]: [el]}
+						else throw new Error 'NYI'
+					else
+						for el in v
+							if elementTypeS0 != type(el) && elementTypeS1 != type el then return {[k]: [el]}
+				else
+					throw new Error 'satisfies does not yet allow for more than 2 types in array'
+
+			else throw new Error "satisfies doesn not yet support type #{type t}"
+
+		else
+			if ts != type v then return {[k]: v}
+
+	return {}
+
+class FuncError extends Error
+	constructor: (msg) ->
+		super msg
+		@name = 'FuncError'
+		Error.captureStackTrace this, FuncError
+
+_satisfiesThrow = (o, spec) ->
+	res = satisfies o, spec
+	if ! isEmpty res then throw new FuncError sf0 res
+
+func = (spec, f) ->
+	(o) ->
+		_satisfiesThrow o, spec
+		f o
+
+
 
 # ----------------------------------------------------------------------------------------------------------
 # TYPE
@@ -308,12 +391,12 @@ mapObjIndexed(flip)
 
 ramdaFlipped = flipAllAndPrependF R
 
-flippable = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff}
+flippable = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func}
 
 nonFlippable = {toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, $$, $$_, pipe_,
 isThenable, isIterable, isNotNil, toStr, clamp,
-superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq, arg0, arg1, arg2, undef}
+superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq, arg0, arg1, arg2, undef, satisfies}
 
 
 module.exports = mergeAll [
@@ -321,7 +404,7 @@ module.exports = mergeAll [
 	flippable,
 	flipAllAndPrependF(flippable), 
 	nonFlippable,
-	{version: '0.4.7'}
+	{version: '0.4.8'}
 ]
 	
 
