@@ -1,5 +1,5 @@
 {add, append, empty, evolve, inc, isNil, merge, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
-{eq, deepEq, throws} = require 'testhelp' #auto_require: testhelp
+{eq, deepEq, deepEq_, throws} = require 'testhelp' #auto_require: testhelp
 
 {undef, isNilOrEmpty, change, changeM, isAffected, diff, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps, qq, qqq} = RE = require './ramda-extras'
 
@@ -17,10 +17,16 @@ describe 'change', ->
 		undo = {}
 		res = change.meta spec, a, undo, total
 		return [res, undo, total]
+	meta = true
+	# changeTester = (spec, a, total) ->
+	# 	res = change spec, a
+	# 	return res
+	# meta = false
 
 	it 'merge number + empty total', ->
 		res = changeTester {a: 1}, {}, {}
-		deepEq [{a: 1}, {a: undefined}, {a: 1}], res
+		if meta then deepEq [{a: 1}, {a: undefined}, {a: 1}], res
+		else deepEq {a: 1}, res
 
 	it 'remove key + extra key in total', ->
 		res = changeTester {a: undefined}, {a: 1, b: 2}, {c: undefined}
@@ -67,7 +73,9 @@ describe 'change', ->
 		it 'merge number', ->
 			a = {a: {a1: null, a2: 0}, b2: 3}
 			res = changeTester {a: {a1: 1}}, a, {}
-			deepEq [{a: {a1: 1, a2: 0}, b2: 3}, {a: {a1: null}}, {a: {a1: 1}}], res
+			eres = {a: {a1: 1, a2: 0}, b2: 3}
+			if meta then deepEq [eres, {a: {a1: null}}, {a: {a1: 1}}], res
+			else deepEq_ eres, res
 
 		it 'remove key', ->
 			a = {a: {a1: null, a2: 0}, b2: 3}

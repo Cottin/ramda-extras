@@ -102,7 +102,8 @@ _change = (spec, a, undo, total, modify) ->
 						undo[k] ?= {}
 						total[k] ?= {}
 						newA[k] = _change v, a[k], undo[k], total[k]
-					else _change v, a[k], undefined, undefined, modify
+					else
+						newA[k] = _change v, a[k], undefined, undefined, modify
 
 		if nested then continue
 
@@ -242,6 +243,13 @@ superFlip = (f) ->
 	if f.length == 3 then curry (a, b, c) -> f c, b, a
 	else flip f
 
+customError = (name) ->
+	class CustomError extends Error
+		constructor: (msg) ->
+			super msg
+			@name = name
+			Error.captureStackTrace this, CustomError
+
 
 
 # ----------------------------------------------------------------------------------------------------------
@@ -313,7 +321,7 @@ module.exports = mergeAll [
 	flippable,
 	flipAllAndPrependF(flippable), 
 	nonFlippable,
-	{version: '0.4.5'}
+	{version: '0.4.7'}
 ]
 	
 
