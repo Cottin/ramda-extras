@@ -1,5 +1,5 @@
 {addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, curry, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, keys, map, mapObjIndexed, match, max, mergeAll, min, pickAll, pipe, prop, reduce, reject, split, toPairs, type, union, values, zipObj} = R = require 'ramda' #auto_require: ramda
-[ːBoolean, ːFunction, ːString, ːArray, ːNumber, ːNull, ːObject] = ['Boolean', 'Function', 'String', 'Array', 'Number', 'Null', 'Object'] #auto_sugar
+[ːObject, ːNull, ːArray, ːNumber, ːFunction, ːString, ːAsyncFunction, ːBoolean] = ['Object', 'Null', 'Array', 'Number', 'Function', 'String', 'AsyncFunction', 'Boolean'] #auto_sugar
 
 class NotYetImplementedError extends Error
 	constructor: (msg) ->
@@ -274,7 +274,7 @@ satisfies = (o, spec, looseObj = false) ->
 		if ts == undefined
 
 			if ːFunction == type t
-				if ːFunction != type v then return {[k]: v}
+				if ːFunction != type(v) && ːAsyncFunction != type v then return {[k]: v}
 
 			else if ːObject == type t
 				res = satisfies v, t, true
@@ -363,6 +363,7 @@ clamp = curry (a, b, x) -> Math.min b, Math.max(a, x)
 _sify = (k, v) ->
 	if v == undefined then '__UNDEFINED__'
 	else if type(v) == 'Function' then '[Function]'
+	else if type(v) == 'AsyncFunction' then '[AsyncFunction]'
 	else v
 
 sf0 = (o) -> JSON.stringify o, _sify, 0
@@ -396,7 +397,8 @@ flippable = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, 
 nonFlippable = {toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, $$, $$_, pipe_,
 isThenable, isIterable, isNotNil, toStr, clamp,
-superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq, arg0, arg1, arg2, undef, satisfies}
+superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq, arg0, arg1, arg2, undef, satisfies,
+customError}
 
 
 module.exports = mergeAll [
@@ -404,7 +406,7 @@ module.exports = mergeAll [
 	flippable,
 	flipAllAndPrependF(flippable), 
 	nonFlippable,
-	{version: '0.4.8'}
+	{version: '0.4.9'}
 ]
 	
 

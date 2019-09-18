@@ -307,9 +307,21 @@ describe.only 'satisfies', ->
 		deepEq {a: 0}, sat {a: 0}, {a: ->}
 		deepEq {}, sat {a: ->}, {a: ->}
 
+	it 'AsyncFunction', ->
+		deepEq {a: 0}, sat {a: 0}, {a: -> await 1}
+		deepEq {}, sat {a: -> await 2}, {a: -> await 1}
+
+	it 'Object', ->
+		deepEq {a: 0}, sat {a: 0}, {a: Object}
+		deepEq {}, sat {a: {}}, {a: Object}
+
 	it 'required', ->
 		deepEq {b: 1}, sat {b: 1}, {a: Number}
 		deepEq {}, sat {a: 1}, {a: Number}
+
+	it 'required object', ->
+		deepEq {b: 1}, sat {b: 1}, {a: Object}
+		deepEq {}, sat {a: {}}, {a: Object}
 
 	it 'optional', ->
 		deepEq {}, sat {b: 1}, {a〳: Number, b: Number}
