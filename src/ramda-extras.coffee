@@ -1,5 +1,9 @@
 {addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, curry, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, keys, map, mapObjIndexed, match, max, mergeAll, min, pickAll, pipe, prop, reduce, reject, split, toPairs, type, union, values, zipObj} = R = require 'ramda' #auto_require: ramda
-[ːObject, ːNull, ːArray, ːNumber, ːFunction, ːString, ːAsyncFunction, ːBoolean] = ['Object', 'Null', 'Array', 'Number', 'Function', 'String', 'AsyncFunction', 'Boolean'] #auto_sugar
+{mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func, toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_, $, $_, $$, $$_, pipe_, isThenable, isIterable, isNotNil, toStr, clamp, superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, arg0, arg1, arg2, undef, satisfies, customError} = RE = require 'ramda-extras' #auto_require: ramda-extras
+[ːNull, ːAsyncFunction, ːBoolean, ːObject, ːFunction, ːString, ːArray, ːNumber] = ['Null', 'AsyncFunction', 'Boolean', 'Object', 'Function', 'String', 'Array', 'Number'] #auto_sugar
+qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
+qqq = (f) -> console.log match(/return (.*);/, f.toString())[1], JSON.stringify(f(), null, 2)
+_ = (...xs) -> xs
 
 class NotYetImplementedError extends Error
 	constructor: (msg) ->
@@ -89,7 +93,7 @@ _change = (spec, a, undo, total, modify) ->
 		nested = false
 		switch type v
 			when 'Undefined' then delete newA[k]
-			when 'Array', 'Null', 'String', 'Number', 'Boolean' then newA[k] = v
+			when 'Array', 'Null', 'String', 'Number', 'Boolean', 'Date' then newA[k] = v
 			when 'Function'
 				newV = v(a[k])
 				if newV == undefined then delete newA[k]
@@ -105,6 +109,7 @@ _change = (spec, a, undo, total, modify) ->
 						newA[k] = _change v, a[k], undo[k], total[k]
 					else
 						newA[k] = _change v, a[k], undefined, undefined, modify
+			else throw new Error "change does not yet support type #{type v}"
 
 		if nested then continue
 
@@ -137,7 +142,7 @@ isAffected = (deps, total) ->
 			when 'Object'
 				if 'Object' != type total[k] then return true # = total[k] changed, we're dep on ancestor
 				else if isAffected v, total[k] then return true
-			else throw new Error 'not a valid dependency object'
+			else throw new Error "#{v} of type #{type v} is not a valid dependency object"
 
 	return false
 
@@ -269,6 +274,7 @@ satisfies = (o, spec, looseObj = false) ->
 		if t == undefined && !optional
 			if looseObj then continue
 			else return {[k]: v}
+		else if v == undefined && optional then continue
 
 		ts = _typeToStr t
 		if ts == undefined
@@ -377,9 +383,7 @@ _q = (asStr, f) ->
 	if asStr then console.log s, JSON.stringify(f(), null, 2)
 	else console.log s, f()
 
-qq = (f) -> _q false, f
 
-qqq = (f) -> _q true, f
 
 
 

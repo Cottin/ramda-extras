@@ -13,8 +13,7 @@ describe 'isNilOrEmpty', ->
 		eq true, isNilOrEmpty({})
 
 describe 'change', ->
-	changeTester = (spec, a, total) ->
-		undo = {}
+	changeTester = (spec, a, undo, total) ->
 		res = change.meta spec, a, undo, total
 		return [res, undo, total]
 	meta = true
@@ -24,43 +23,53 @@ describe 'change', ->
 	# meta = false
 
 	it 'merge number + empty total', ->
-		res = changeTester {a: 1}, {}, {}
+		res = changeTester {a: 1}, {}, {}, {}
 		if meta then deepEq [{a: 1}, {a: undefined}, {a: 1}], res
 		else deepEq {a: 1}, res
 
 	it 'remove key + extra key in total', ->
-		res = changeTester {a: undefined}, {a: 1, b: 2}, {c: undefined}
+		res = changeTester {a: undefined}, {a: 1, b: 2}, {}, {c: undefined}
 		deepEq [{b: 2}, {a: 1}, {a: undefined, c: undefined}], res
 
 	it 'remove key of empty obj + same key in total', ->
 		# {a: 1}  {} {}
-		res = changeTester {a: undefined}, {}, {a: undefined}
+		res = changeTester {a: undefined}, {}, {}, {a: undefined}
 		deepEq [{}, {}, {a: undefined}], res
 
+	# it.only 'set key + same key in undo', ->
+	# 	# {a: 1}  {} {}
+	# 	res = changeTester {a: 2, b: 1}, {}, {a: 1}, {a: 0}
+	# 	deepEq_ [{a: 2, b: 1}, {a: 1}, {a: 2, b: 1}], res
+
 	it 'set to null', ->
-		res = changeTester {a: null}, {a: 1, b: 2}, {a: 2}
+		res = changeTester {a: null}, {a: 1, b: 2}, {}, {a: 2}
 		deepEq [{a: null, b: 2}, {a: 1}, {a: null}], res
 
+	it 'date', ->
+		date1 = new Date
+		res = changeTester {a: date1}, {a: 1, b: 2}, {}, {a: 2}
+		deepEq_ [{a: date1, b: 2}, {a: 1}, {a: date1}], res
+
 	it 'merge array + same key in total', ->
-		res = changeTester {a: [2, 3]}, {a: [1]}, {a: [5]}
+		res = changeTester {a: [2, 3]}, {a: [1]}, {}, {a: [5]}
 		deepEq [{a: [2, 3]}, {a: [1]}, {a: [2, 3]}], res
 
 	it 'evolve if using function', ->
-		res = changeTester {a: inc}, {a: 1}, {}
+		res = changeTester {a: inc}, {a: 1}, {}, {}
 		deepEq [{a: 2}, {a: 1}, {a: 2}], res
 
 	it 'evolve if using function and create key if not there', ->
-		res = changeTester {a: (x) -> if isNil(x) then 1 else inc}, {}, {}
+		res = changeTester {a: (x) -> if isNil(x) then 1 else inc}, {}, {}, {}
 		deepEq [{a: 1}, {a: undefined}, {a: 1}], res
 
 	it 'evolve if using function but dont create key on undefined value', ->
-		res = changeTester {a: (x) -> if isNil(x) then undefined else inc}, {b: 2}, {}
+		res = changeTester {a: (x) -> if isNil(x) then undefined else inc}, {b: 2}, {}, {}
 		deepEq [{b: 2}, {}, {}], res
 
 	it 'undefined in function = "fancy toggle"', ->
-		res = changeTester {a: (x) -> if x then undefined else true}, {b: 2}, {}
+		res = changeTester {a: (x) -> if x then undefined else true}, {b: 2}, {}, {}
 		deepEq [{a: true, b: 2}, {a: undefined}, {a: true}], res
-		res = changeTester {a: (x) -> if x then undefined else true}, {a: true, b: 2}, {}
+		res = changeTester {a: (x) -> if x then undefined else true}, {a: true, b: 2}, {}, {}
 		deepEq [{b: 2}, {a: true}, {a: undefined}], res
 
 	it 'reuses values from spec', ->
@@ -72,48 +81,47 @@ describe 'change', ->
 	describe 'nested', ->
 		it 'merge number', ->
 			a = {a: {a1: null, a2: 0}, b2: 3}
-			res = changeTester {a: {a1: 1}}, a, {}
+			res = changeTester {a: {a1: 1}}, a, {}, {}
 			eres = {a: {a1: 1, a2: 0}, b2: 3}
 			if meta then deepEq [eres, {a: {a1: null}}, {a: {a1: 1}}], res
 			else deepEq_ eres, res
 
 		it 'remove key', ->
 			a = {a: {a1: null, a2: 0}, b2: 3}
-			res = changeTester {a: {a1: undefined}}, a, {a: {a1: null, a2: 0}}
+			res = changeTester {a: {a1: undefined}}, a, {}, {a: {a1: null, a2: 0}}
 			total = {a: {a1: undefined, a2: 0}}
 			deepEq [{a: {a2: 0}, b2: 3}, {a: {a1: null}}, total], res
 
 		it 'replace array', ->
 			a = {a: {a1: [1, 2, 3], a2: 0}, b2: 3}
-			res = changeTester {a: {a1: [1, 2, 3, 4]}}, a, {a: {a3: undefined}}
+			res = changeTester {a: {a1: [1, 2, 3, 4]}}, a, {}, {a: {a3: undefined}}
 			deepEq [{a: {a1: [1, 2, 3, 4], a2: 0}, b2: 3},
 			{a: {a1: [1, 2, 3]}},
 			{a: {a1: [1, 2, 3, 4], a3: undefined}}], res
 
 		it 'evolve using function', ->
 			a = {a: {a1: [1, 2, 3], a2: 0}, b2: 3}
-			res = changeTester {a: {a1: append(4)}}, a, {b2: 3}
+			res = changeTester {a: {a1: append(4)}}, a, {}, {b2: 3}
 			deepEq [{a: {a1: [1, 2, 3, 4], a2: 0}, b2: 3},
 			{a: {a1: [1, 2, 3]}},
 			{a: {a1: [1, 2, 3, 4]}, b2: 3}], res
 
 		it 'evolve using function where there is no key', ->
 			a = {b2: 3}
-			res = changeTester {a: {a1: (x) -> if x then append(4) else [4]}}, a, {b2: 3}
+			res = changeTester {a: {a1: (x) -> if x then append(4) else [4]}}, a, {}, {b2: 3}
 			deepEq [{a: {a1: [4]}, b2: 3},
 			{a: undefined},
 			{a: {a1: [4]}, b2: 3}], res
 
 
 	describe 'changeM specifics', ->
-		changeMTester = (spec, a, total) ->
-			undo = {}
+		changeMTester = (spec, a, undo, total) ->
 			res = changeM.meta spec, a, undo, total
 			return [res, undo, total]
 
 		it 'strict equality', ->
 			a = {a: {a1: {a12: 2}}}
-			res = changeMTester {a: {a1: {a11: 1}}}, a, {a: {a1: {a12: 2}}}
+			res = changeMTester {a: {a1: {a11: 1}}}, a, {}, {a: {a1: {a12: 2}}}
 			deepEq [{a: {a1: {a11: 1, a12: 2}}},
 			{a: {a1: {a11: undefined}}},
 			{a: {a1: {a11: 1, a12: 2}}}], res
@@ -289,7 +297,7 @@ describe 'qq', ->
 		eq undefined, qq 1, 1
 		eq undefined, qqq 1, 1
 
-describe.only 'satisfies', ->
+describe 'satisfies', ->
 	sat = satisfies
 	it 'String', ->
 		deepEq {a: 1}, sat {a: 1}, {a: String}
@@ -325,6 +333,9 @@ describe.only 'satisfies', ->
 
 	it 'optional', ->
 		deepEq {}, sat {b: 1}, {a〳: Number, b: Number}
+
+	it 'optional with undefined', ->
+		deepEq {}, sat {a: undefined, b: 1}, {a〳: Number, b: Number}
 
 	describe 'array', ->
 		it 'String', ->
