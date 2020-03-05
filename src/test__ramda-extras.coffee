@@ -1,7 +1,7 @@
 {add, append, empty, evolve, inc, isNil, merge, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
-{eq, deepEq, deepEq_, throws} = require 'testhelp' #auto_require: testhelp
+{eq, deepEq, deepEq_, fdeepEq, throws} = require 'testhelp' #auto_require: testhelp
 
-{undef, isNilOrEmpty, change, changeM, isAffected, diff, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps, qq, qqq, satisfies} = RE = require './ramda-extras'
+{undef, isNilOrEmpty, change, changeM, toggle, isAffected, diff, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps, qq, qqq, satisfies, dottedApi} = RE = require './ramda-extras'
 
 describe 'isNilOrEmpty', ->
 	it 'simple', ->
@@ -11,6 +11,11 @@ describe 'isNilOrEmpty', ->
 		eq true, isNilOrEmpty([])
 		eq false, isNilOrEmpty({a: 1})
 		eq true, isNilOrEmpty({})
+
+describe 'toggle', ->
+	it 'simple', ->
+		deepEq [1, 2, 3], toggle 3, [1, 2]
+		deepEq [1, 2], toggle(3, [1, 2, 3])
 
 describe 'change', ->
 	changeTester = (spec, a, undo, total) ->
@@ -36,7 +41,7 @@ describe 'change', ->
 		res = changeTester {a: undefined}, {}, {}, {a: undefined}
 		deepEq [{}, {}, {a: undefined}], res
 
-	# it.only 'set key + same key in undo', ->
+	# it 'set key + same key in undo', ->
 	# 	# {a: 1}  {} {}
 	# 	res = changeTester {a: 2, b: 1}, {}, {a: 1}, {a: 0}
 	# 	deepEq_ [{a: 2, b: 1}, {a: 1}, {a: 2, b: 1}], res
@@ -294,8 +299,8 @@ describe 'fliped stuff', ->
 
 describe 'qq', ->
 	it 'simple cases', ->
-		eq undefined, qq 1, 1
-		eq undefined, qqq 1, 1
+		eq undefined, qq -> 1
+		eq undefined, qqq -> 1
 
 describe 'satisfies', ->
 	sat = satisfies
@@ -315,20 +320,34 @@ describe 'satisfies', ->
 		deepEq {a: 0}, sat {a: 0}, {a: ->}
 		deepEq {}, sat {a: ->}, {a: ->}
 
-	it 'AsyncFunction', ->
-		deepEq {a: 0}, sat {a: 0}, {a: -> await 1}
-		deepEq {}, sat {a: -> await 2}, {a: -> await 1}
+	# it 'AsyncFunction', ->
+	# 	deepEq {a: 0}, sat {a: 0}, {a: -> await 1}
+	# 	deepEq {}, sat {a: -> await 2}, {a: -> await 1}
 
 	it 'Object', ->
 		deepEq {a: 0}, sat {a: 0}, {a: Object}
 		deepEq {}, sat {a: {}}, {a: Object}
 
-	it 'required', ->
-		deepEq {b: 1}, sat {b: 1}, {a: Number}
-		deepEq {}, sat {a: 1}, {a: Number}
+	it 'Enum', ->
+		deepEq {a: 3}, sat {a: 3}, {a: new Set([1, 2])}
+		deepEq {}, sat {a: 2}, {a: new Set([1, 2])}
+		deepEq {}, sat {}, {a〳: new Set([1, 2])}
+
+	it 'required 1', ->
+		deepEq {a: 'MISSING'}, sat {b: 1}, {a: Number}, true
+
+	it 'required 2', ->
+		deepEq {a: 'MISSING', b: 'NOT_IN_SPEC'}, sat {b: 1}, {a: Number}, false
+
+	it 'required 3', ->
+		deepEq {}, sat {b: 1}, {a〳: Number}, true
+
+	it 'required 4', ->
+		deepEq {a: 'MISSING'}, sat {}, {a: Number}, false
+
 
 	it 'required object', ->
-		deepEq {b: 1}, sat {b: 1}, {a: Object}
+		deepEq {a: 'MISSING', b: 'NOT_IN_SPEC'}, sat {b: 1}, {a: Object}
 		deepEq {}, sat {a: {}}, {a: Object}
 
 	it 'optional', ->
@@ -370,3 +389,14 @@ describe 'satisfies', ->
 		it 'String, Number, Boolean', ->
 			deepEq {a: {n: ''}}, sat {a: {s: '', n: '', b: true}}, {a: {s: String, n: Number, b: Boolean}}
 			deepEq {}, sat {a: {s: '', n: 1, b: true}}, {a: {s: String, n: Number, b: Boolean}}
+
+describe 'dottedApi', ->
+	it '1', ->
+		fns = dottedApi {a: ['a1', 'a2'], b: ['b1', 'b2'], c: ['c1', 'c2']}, (args) -> {e: 'e1', ...args}
+		res = fns.b2.c2.a1 {d: 'd1'}
+		fdeepEq res, {a: 'a1', b: 'b2', c: 'c2', d: 'd1', e: 'e1'}
+
+	it 'same value', ->
+		throws /cannot have duplicate value/, ->
+			dottedApi {a: ['a1', 'a2'], b: ['a1', 'b2'], c: ['c1', 'c2']}, (args) -> {e: 'e1', ...args}
+

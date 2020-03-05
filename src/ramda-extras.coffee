@@ -1,6 +1,6 @@
-{addIndex, adjust, anyPass, assoc, chain, clamp, complement, compose, composeP, curry, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, keys, map, mapObjIndexed, match, max, mergeAll, min, pickAll, pipe, prop, reduce, reject, split, toPairs, type, union, values, zipObj} = R = require 'ramda' #auto_require: ramda
+{addIndex, adjust, anyPass, append, assoc, chain, clamp, complement, compose, composeP, contains, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, keys, length, map, mapObjIndexed, match, max, merge, mergeAll, min, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj} = R = require 'ramda' #auto_require: ramda
 {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func, toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_, $, $_, $$, $$_, pipe_, isThenable, isIterable, isNotNil, toStr, clamp, superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, arg0, arg1, arg2, undef, satisfies, customError} = RE = require 'ramda-extras' #auto_require: ramda-extras
-[ːNull, ːAsyncFunction, ːBoolean, ːObject, ːFunction, ːString, ːArray, ːNumber] = ['Null', 'AsyncFunction', 'Boolean', 'Object', 'Function', 'String', 'Array', 'Number'] #auto_sugar
+[ːObject, ːNumber, ːFunction, ːSet, ːString, ːArray, ːc2, ːc1, ːNull, ːBoolean, ːAsyncFunction] = ['Object', 'Number', 'Function', 'Set', 'String', 'Array', 'c2', 'c1', 'Null', 'Boolean', 'AsyncFunction'] #auto_sugar
 qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
 qqq = (f) -> console.log match(/return (.*);/, f.toString())[1], JSON.stringify(f(), null, 2)
 _ = (...xs) -> xs
@@ -33,6 +33,10 @@ minIn = reduce min, Infinity
 
 mapI = addIndex map
 
+# [x] -> [x]
+# appends or removes x from list
+toggle = curry (x, xs) ->
+	if contains x, xs then without [x], xs else append x, xs
 
 # ----------------------------------------------------------------------------------------------------------
 # OBJECT
@@ -249,6 +253,8 @@ superFlip = (f) ->
 	if f.length == 3 then curry (a, b, c) -> f c, b, a
 	else flip f
 
+# TODO: probably remove this since it's not perfect, see example output in node:
+# CustomError [ServerError]: No operation 'delete' for entity 'Record'
 customError = (name) ->
 	class CustomError extends Error
 		constructor: (msg) ->
@@ -265,26 +271,31 @@ _typeToStr = (t) ->
 		when Boolean then ːBoolean
 		when Array then ːArray
 		when Object then ːObject
+		when Set then ːSet
 		when null then ːNull
 
 
-satisfies = (o, spec, looseObj = false) ->
+satisfies = (o, spec, loose = false) ->
+	ret = {}
 	for k,v of o
 		t = spec[k] || optional = true && spec[k+'〳']
-		if t == undefined && !optional
-			if looseObj then continue
-			else return {[k]: v}
-		else if v == undefined && optional then continue
+		if t == undefined
+			if !loose then ret[k] = 'NOT_IN_SPEC'
+			continue
+
+		if v == undefined
+			if !optional then ret[k] = 'MISSING (UNDEFINED)'
+			continue
 
 		ts = _typeToStr t
 		if ts == undefined
 
 			if ːFunction == type t
-				if ːFunction != type(v) && ːAsyncFunction != type v then return {[k]: v}
+				if ːFunction != type(v) && ːAsyncFunction != type v then ret[k] = v
 
 			else if ːObject == type t
 				res = satisfies v, t, true
-				if ! isEmpty res then return {[k]: res}
+				if ! isEmpty res then ret[k] = res
 
 			else if ːArray == type t
 				# TODO: should probably be able to simplify the array case
@@ -296,10 +307,10 @@ satisfies = (o, spec, looseObj = false) ->
 						else if ːObject == type t[0]
 							for el in v
 								res = satisfies el, t[0], true
-								if ! isEmpty res then return {[k]: [res]}
+								if ! isEmpty res then ret[k] = [res]
 					else
 						for el in v
-							if elementTypeS != type el then return {[k]: [el]}
+							if elementTypeS != type el then ret[k] = [el]
 
 				else if t.length == 2
 					elementTypeS0 = _typeToStr t[0]
@@ -309,20 +320,28 @@ satisfies = (o, spec, looseObj = false) ->
 						else if ːArray == type t[0] then throw new Error 'NYI'
 						else if ːObject == type t[0]
 							for el in v
-								if ! isEmpty(satisfies(el, t[0], true)) && elementTypeS1 != type el then return {[k]: [el]}
+								if ! isEmpty(satisfies(el, t[0], true)) && elementTypeS1 != type el then ret[k] = [el]
 						else throw new Error 'NYI'
 					else
 						for el in v
-							if elementTypeS0 != type(el) && elementTypeS1 != type el then return {[k]: [el]}
+							if elementTypeS0 != type(el) && elementTypeS1 != type el then ret[k] = [el]
 				else
 					throw new Error 'satisfies does not yet allow for more than 2 types in array'
 
-			else throw new Error "satisfies doesn not yet support type #{type t}"
+			else if ːSet == type t
+				if ! t.has v then ret[k] = v
+
+			else throw new Error "satisfies does not yet support type #{type t}"
 
 		else
-			if ts != type v then return {[k]: v}
+			if ts != type v then ret[k] = v
 
-	return {}
+	missing = $ o, keys, difference(keys(spec)), reject test(/〳$/)
+	if ! isEmpty missing
+		missingObj = $ missing, (map (k) -> [k, 'MISSING']), fromPairs
+		ret = merge ret, missingObj
+
+	return ret
 
 class FuncError extends Error
 	constructor: (msg) ->
@@ -330,14 +349,81 @@ class FuncError extends Error
 		@name = 'FuncError'
 		Error.captureStackTrace this, FuncError
 
-_satisfiesThrow = (o, spec) ->
-	res = satisfies o, spec
+_satisfiesThrow = (o, spec, loose) ->
+	res = satisfies o, spec, loose
 	if ! isEmpty res then throw new FuncError sf0 res
 
 func = (spec, f) ->
 	(o) ->
 		_satisfiesThrow o, spec
 		f o
+
+func.loose = (spec, f) ->
+	(o) ->
+		_satisfiesThrow o, spec, true
+		f o
+
+o =
+	a1:
+		b1: [ːc1, ːc2]
+		b2: [ːc1, ːc2]
+	a2:
+		b1: [ːc1, ːc2]
+		b2: [ːc1, ːc2]
+
+
+class Dotted
+	constructor: (keysAndValues) ->
+		@res = {}
+		@keysAndValues = keysAndValues
+		vk = {}
+		for k, vals in keysAndValues
+			for v in vals
+				vk[v] = k
+		@valuesAndKeys = vk
+
+	set: (v) ->
+		k = @valuesAndKeys[v]
+		if has k, @res then throw new Error "Cannot set #{k}=#{v} since you have already set #{k}=#{@res[k]}"
+
+		@res[k] = v
+
+
+
+
+dottedApi = (keysAndValues, f) ->
+	# inverted index {a: ['a1', 'a2']} -> {a1: 'a', a2: 'a'}
+	vk = {}
+	for k, vals of keysAndValues
+		for v in vals
+			if has v, vk then throw new Error "cannot have duplicate value '#{v}' in dottedApi"
+			vk[v] = k
+
+	# all permutations {a1: {a1: {a1: 1, a2: 1, b1: 1, b2: 1}, a2: {...}, ...}, ...}
+	numKeys = $ keysAndValues, keys, length
+	res = {}
+	lastRes = 1
+	for i in [numKeys-1..0] by -1
+		res = {}
+		for k, vals of keysAndValues
+			for v in vals
+				res[v] = lastRes
+		lastRes = res
+
+	# resolve all permutations to only possible + and combine keys and values so far in soFar + return function
+	resolve = (o, soFar = {}) ->
+		fn = (args) -> f {...soFar, ...args}
+		for v, vals of o
+			k = vk[v]
+			if has k, soFar then continue
+			fn[v] = resolve vals, assoc k, v, soFar
+
+		return fn
+
+	return resolve res
+
+
+
 
 
 
@@ -396,13 +482,13 @@ mapObjIndexed(flip)
 
 ramdaFlipped = flipAllAndPrependF R
 
-flippable = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func}
+flippable = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func, toggle}
 
 nonFlippable = {toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, $$, $$_, pipe_,
 isThenable, isIterable, isNotNil, toStr, clamp,
 superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq, arg0, arg1, arg2, undef, satisfies,
-customError}
+customError, dottedApi}
 
 
 module.exports = mergeAll [
