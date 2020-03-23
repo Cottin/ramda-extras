@@ -16,6 +16,8 @@ describe 'toggle', ->
 	it 'simple', ->
 		deepEq [1, 2, 3], toggle 3, [1, 2]
 		deepEq [1, 2], toggle(3, [1, 2, 3])
+		deepEq [3], toggle(3, [])
+		deepEq [3], toggle(3, undefined)
 
 describe 'change', ->
 	changeTester = (spec, a, undo, total) ->
@@ -357,6 +359,9 @@ describe 'satisfies', ->
 		deepEq {}, sat {a: undefined, b: 1}, {a〳: Number, b: Number}
 
 	describe 'array', ->
+		it 'Null', ->
+			deepEq {a: 'MISSING (null)'}, sat {a: null}, {a: [String]}
+
 		it 'String', ->
 			deepEq {a: [1]}, sat {a: [1, '']}, {a: [String]}
 			deepEq {}, sat {a: ['', '2']}, {a: [String]}

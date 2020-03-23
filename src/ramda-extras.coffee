@@ -1,6 +1,6 @@
 {addIndex, adjust, anyPass, append, assoc, chain, clamp, complement, compose, composeP, contains, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, keys, length, map, mapObjIndexed, match, max, merge, mergeAll, min, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj} = R = require 'ramda' #auto_require: ramda
-{mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func, toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_, $, $_, $$, $$_, pipe_, isThenable, isIterable, isNotNil, toStr, clamp, superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, arg0, arg1, arg2, undef, satisfies, customError} = RE = require 'ramda-extras' #auto_require: ramda-extras
-[ːObject, ːNumber, ːFunction, ːSet, ːString, ːArray, ːc2, ːc1, ːNull, ːBoolean, ːAsyncFunction] = ['Object', 'Number', 'Function', 'Set', 'String', 'Array', 'c2', 'c1', 'Null', 'Boolean', 'AsyncFunction'] #auto_sugar
+{mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func, toggle, toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_, $, $_, $$, $$_, pipe_, isThenable, isIterable, isNotNil, toStr, clamp, superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, arg0, arg1, arg2, undef, satisfies, customError} = RE = require 'ramda-extras' #auto_require: ramda-extras
+[ːArray, ːObject, ːAsyncFunction, ːFunction, ːc1, ːBoolean, ːc2, ːSet, ːNull, ːString, ːNumber] = ['Array', 'Object', 'AsyncFunction', 'Function', 'c1', 'Boolean', 'c2', 'Set', 'Null', 'String', 'Number'] #auto_sugar
 qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
 qqq = (f) -> console.log match(/return (.*);/, f.toString())[1], JSON.stringify(f(), null, 2)
 _ = (...xs) -> xs
@@ -36,6 +36,7 @@ mapI = addIndex map
 # [x] -> [x]
 # appends or removes x from list
 toggle = curry (x, xs) ->
+	if isNil xs then return [x]
 	if contains x, xs then without [x], xs else append x, xs
 
 # ----------------------------------------------------------------------------------------------------------
@@ -285,6 +286,10 @@ satisfies = (o, spec, loose = false) ->
 
 		if v == undefined
 			if !optional then ret[k] = 'MISSING (UNDEFINED)'
+			continue
+
+		if v == null
+			if !optional then ret[k] = 'MISSING (null)'
 			continue
 
 		ts = _typeToStr t

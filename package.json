@@ -1,13 +1,14 @@
 {
   "name": "ramda-extras",
-  "version": "0.4.11",
+  "version": "0.4.12",
   "description": "Some few functions I feel was missing in ramda",
-  "main": "lib/ramda-extras.js",
+  "main": "ramda-extras.js",
   "scripts": {
-    "clean": "rimraf lib",
-    "build": "coffee -o lib/ -c src/",
+    "test": "mocha 'src/**/test*.coffee' --watch --compilers coffee:coffeescript/register --transpile --slow 1",
+    "clean": "rimraf *.js",
+    "build": "coffee -o ./ -c src/",
     "dist": "npm run clean && npm run build",
-    "test": "mocha 'src/**/test*.coffee' --watch --compilers coffee:coffeescript/register --transpile --slow 1"
+    "pub": "npm run dist && npm publish && npm run clean"
   },
   "repository": {
     "type": "git",
