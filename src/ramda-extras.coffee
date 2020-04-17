@@ -1,6 +1,6 @@
 {addIndex, adjust, anyPass, append, assoc, chain, clamp, complement, compose, composeP, contains, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, keys, length, map, mapObjIndexed, match, max, merge, mergeAll, min, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj} = R = require 'ramda' #auto_require: ramda
 {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func, toggle, toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_, $, $_, $$, $$_, pipe_, isThenable, isIterable, isNotNil, toStr, clamp, superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, arg0, arg1, arg2, undef, satisfies, customError} = RE = require 'ramda-extras' #auto_require: ramda-extras
-[ːArray, ːObject, ːAsyncFunction, ːFunction, ːc1, ːBoolean, ːc2, ːSet, ːNull, ːString, ːNumber] = ['Array', 'Object', 'AsyncFunction', 'Function', 'c1', 'Boolean', 'c2', 'Set', 'Null', 'String', 'Number'] #auto_sugar
+[ːc2, ːc1, ːAsyncFunction, ːNumber, ːArray, ːSet, ːNull, ːString, ːBoolean, ːFunction, ːObject] = ['c2', 'c1', 'AsyncFunction', 'Number', 'Array', 'Set', 'Null', 'String', 'Boolean', 'Function', 'Object'] #auto_sugar
 qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
 qqq = (f) -> console.log match(/return (.*);/, f.toString())[1], JSON.stringify(f(), null, 2)
 _ = (...xs) -> xs
@@ -94,12 +94,20 @@ _change = (spec, a, undo, total, modify) ->
 	else
 		newA = {}
 		for k, v of a then newA[k] = v
+	if type(spec) == 'Function'
+		# undo and total will not be correctly reflected here, see comment for when 'Function'
+		wrapped = {value: a}
+		undoTemp = {}
+		totalTemp = {}
+		newWrapped = _change {value: spec}, wrapped, undoTemp, totalTemp, modify
+		return newWrapped.value
 	for k, v of spec
 		nested = false
 		switch type v
 			when 'Undefined' then delete newA[k]
 			when 'Array', 'Null', 'String', 'Number', 'Boolean', 'Date' then newA[k] = v
 			when 'Function'
+				# undo and total will probably not be correct when using functions
 				newV = v(a[k])
 				if newV == undefined then delete newA[k]
 				else newA[k] = newV
@@ -356,7 +364,9 @@ class FuncError extends Error
 
 _satisfiesThrow = (o, spec, loose) ->
 	res = satisfies o, spec, loose
-	if ! isEmpty res then throw new FuncError sf0 res
+	if ! isEmpty res
+		console.error 'Erroneous data to func:', o
+		throw new FuncError sf0 res
 
 func = (spec, f) ->
 	(o) ->

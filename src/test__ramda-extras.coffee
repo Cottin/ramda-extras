@@ -1,4 +1,4 @@
-{add, append, empty, evolve, inc, isNil, merge, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
+{add, append, dec, empty, evolve, inc, isNil, merge, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
 {eq, deepEq, deepEq_, fdeepEq, throws} = require 'testhelp' #auto_require: testhelp
 
 {undef, isNilOrEmpty, change, changeM, toggle, isAffected, diff, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps, qq, qqq, satisfies, dottedApi} = RE = require './ramda-extras'
@@ -51,6 +51,10 @@ describe 'change', ->
 	it 'set to null', ->
 		res = changeTester {a: null}, {a: 1, b: 2}, {}, {a: 2}
 		deepEq [{a: null, b: 2}, {a: 1}, {a: null}], res
+
+	it 'function', ->
+		res = changeTester (({a, b}) -> {a: inc(a), b: dec(b), c: 1}), {a: 1, b: 2}, {}, {a: 2, d: 3}
+		deepEq_ [{a: 2, b: 1, c: 1}, {}, {a: 2, d: 3}], res
 
 	it 'date', ->
 		date1 = new Date
