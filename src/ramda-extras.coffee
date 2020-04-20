@@ -449,7 +449,12 @@ recursiveProxy = (o, handler, path=[]) ->
 		else
 			subProxy[p] = o[p]
 
-	callHandler = {get: (o, prop) -> handler.get o, prop, $(path, append(prop), join('.'))}
+	callHandler =
+		get: (o, prop) ->
+			if type(prop) == 'Symbol' then pathToUse = join '.', path
+			else pathToUse = $ path, append(prop), join('.')
+			handler.get o, prop, pathToUse
+
 	return new Proxy(subProxy, callHandler)
 
 
