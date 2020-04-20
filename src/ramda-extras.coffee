@@ -1,6 +1,6 @@
-{addIndex, adjust, anyPass, append, assoc, chain, clamp, complement, compose, composeP, contains, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, keys, length, map, mapObjIndexed, match, max, merge, mergeAll, min, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj} = R = require 'ramda' #auto_require: ramda
+{addIndex, adjust, anyPass, append, assoc, chain, clamp, complement, compose, composeP, contains, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, join, keys, length, map, mapObjIndexed, match, max, merge, mergeAll, min, path, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj} = R = require 'ramda' #auto_require: ramda
 {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func, toggle, toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_, $, $_, $$, $$_, pipe_, isThenable, isIterable, isNotNil, toStr, clamp, superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, arg0, arg1, arg2, undef, satisfies, customError} = RE = require 'ramda-extras' #auto_require: ramda-extras
-[ːc2, ːc1, ːAsyncFunction, ːNumber, ːArray, ːSet, ːNull, ːString, ːBoolean, ːFunction, ːObject] = ['c2', 'c1', 'AsyncFunction', 'Number', 'Array', 'Set', 'Null', 'String', 'Boolean', 'Function', 'Object'] #auto_sugar
+[ːFunction, ːSet, ːAsyncFunction, ːArray, ːObject, ːc2, ːString, ːNull, ːNumber, ːc1, ːBoolean] = ['Function', 'Set', 'AsyncFunction', 'Array', 'Object', 'c2', 'String', 'Null', 'Number', 'c1', 'Boolean'] #auto_sugar
 qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
 qqq = (f) -> console.log match(/return (.*);/, f.toString())[1], JSON.stringify(f(), null, 2)
 _ = (...xs) -> xs
@@ -439,6 +439,17 @@ dottedApi = (keysAndValues, f) ->
 
 
 
+recursiveProxy = (o, handler, path=[]) ->
+	subProxy = {}
+	for p of o
+		if type(o[p]) == 'Object'
+			subProxy[p] = recursiveProxy(o[p], handler, append(p, path))
+		else
+			subProxy[p] = o[p]
+
+	callHandler = {get: (o, prop) -> handler.get o, prop, $(path, append(prop), join('.'))}
+	return new Proxy(subProxy, callHandler)
+
 
 
 
@@ -503,7 +514,7 @@ nonFlippable = {toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_,
 $, $_, $$, $$_, pipe_,
 isThenable, isIterable, isNotNil, toStr, clamp,
 superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq, arg0, arg1, arg2, undef, satisfies,
-customError, dottedApi}
+customError, dottedApi, recursiveProxy}
 
 
 module.exports = mergeAll [

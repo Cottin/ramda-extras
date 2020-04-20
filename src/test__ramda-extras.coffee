@@ -1,7 +1,13 @@
-{add, append, dec, empty, evolve, inc, isNil, merge, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
+{add, append, dec, empty, evolve, inc, isNil, match, merge, path, prop, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
+{change, changeM, pickRec, isAffected, diff, toggle, cc, cc_, doto, doto_, $, $_, $$, $$_, superFlip, isNilOrEmpty, PromiseProps, undef, satisfies} = RE = require 'ramda-extras' #auto_require: ramda-extras
+[] = [] #auto_sugar
+qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
+qqq = (f) -> console.log match(/return (.*);/, f.toString())[1], JSON.stringify(f(), null, 2)
+_ = (...xs) -> xs
+
 {eq, deepEq, deepEq_, fdeepEq, throws} = require 'testhelp' #auto_require: testhelp
 
-{undef, isNilOrEmpty, change, changeM, toggle, isAffected, diff, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps, qq, qqq, satisfies, dottedApi} = RE = require './ramda-extras'
+{undef, isNilOrEmpty, change, changeM, toggle, isAffected, diff, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps, qq, qqq, satisfies, dottedApi, recursiveProxy} = RE = require './ramda-extras'
 
 describe 'isNilOrEmpty', ->
 	it 'simple', ->
@@ -408,4 +414,23 @@ describe 'dottedApi', ->
 	it 'same value', ->
 		throws /cannot have duplicate value/, ->
 			dottedApi {a: ['a1', 'a2'], b: ['a1', 'b2'], c: ['c1', 'c2']}, (args) -> {e: 'e1', ...args}
+
+describe 'recursiveProxy', ->
+	handler = (ref) ->
+		get: (o, prop, path) ->
+			ref.value = path
+			return o[prop]
+			
+	it '1', ->
+		ref = {value: null}
+		proxy = recursiveProxy {a: {a1: {a11: 1}}, b: 2}, handler(ref)
+		proxy.a.a1.a11
+		fdeepEq 'a.a1.a11', ref.value
+
+
+
+
+
+
+
 
