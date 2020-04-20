@@ -420,12 +420,14 @@ describe 'recursiveProxy', ->
 		get: (o, prop, path) ->
 			ref.value = path
 			return o[prop]
-			
+
 	it '1', ->
 		ref = {value: null}
-		proxy = recursiveProxy {a: {a1: {a11: 1}}, b: 2}, handler(ref)
+		proxy = recursiveProxy {a: {a1: {a11: 1}}, b: 2, c: [{c1: [{c11: 1, c12: 2}]}]}, handler(ref)
 		proxy.a.a1.a11
 		fdeepEq 'a.a1.a11', ref.value
+		proxy.c[0].c1[0].c12
+		fdeepEq 'c.c1.c12', ref.value
 
 
 

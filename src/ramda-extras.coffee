@@ -443,7 +443,9 @@ recursiveProxy = (o, handler, path=[]) ->
 	subProxy = {}
 	for p of o
 		if type(o[p]) == 'Object'
-			subProxy[p] = recursiveProxy(o[p], handler, append(p, path))
+			subProxy[p] = recursiveProxy o[p], handler, append(p, path)
+		else if type(o[p]) == 'Array'
+			subProxy[p] = $ o[p], map (x) -> recursiveProxy x, handler, append(p, path)
 		else
 			subProxy[p] = o[p]
 
