@@ -1,13 +1,13 @@
 {add, append, dec, empty, evolve, inc, isNil, match, merge, path, prop, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
 {change, changeM, pickRec, isAffected, diff, toggle, cc, cc_, doto, doto_, $, $_, $$, $$_, superFlip, isNilOrEmpty, PromiseProps, undef, satisfies} = RE = require 'ramda-extras' #auto_require: ramda-extras
-[] = [] #auto_sugar
+[ːb, ːa1] = ['b', 'a1'] #auto_sugar
 qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
 qqq = (f) -> console.log match(/return (.*);/, f.toString())[1], JSON.stringify(f(), null, 2)
 _ = (...xs) -> xs
 
 {eq, deepEq, deepEq_, fdeepEq, throws} = require 'testhelp' #auto_require: testhelp
 
-{undef, isNilOrEmpty, change, changeM, toggle, isAffected, diff, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps, qq, qqq, satisfies, dottedApi, recursiveProxy} = RE = require './ramda-extras'
+{undef, isNilOrEmpty, change, changeM, toggle, isAffected, diff, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps, qq, qqq, satisfies, dottedApi, recursiveProxy, reshape} = RE = require './ramda-extras'
 
 describe 'isNilOrEmpty', ->
 	it 'simple', ->
@@ -309,10 +309,10 @@ describe 'fliped stuff', ->
 	it 'simple cases', ->
 		eq 'Function', type RE.freduce
 
-describe 'qq', ->
-	it 'simple cases', ->
-		eq undefined, qq -> 1
-		eq undefined, qqq -> 1
+# describe 'qq', ->
+	# it 'simple cases', ->
+		# eq undefined, qq -> 1
+		# eq undefined, qqq -> 1
 
 describe 'satisfies', ->
 	sat = satisfies
@@ -423,13 +423,17 @@ describe 'recursiveProxy', ->
 
 	it '1', ->
 		ref = {value: null}
-		proxy = recursiveProxy {a: {a1: {a11: 1}}, b: 2, c: [{c1: [{c11: 1, c12: 2}]}]}, handler(ref)
-		proxy.a.a1.a11
-		fdeepEq 'a.a1.a11', ref.value
+		proxy = recursiveProxy {a: {a1: {a11: [1, 2, 3]}}, b: 2, c: [{c1: [{c11: 1, c12: 2}]}]}, handler(ref)
+		deepEq [1, 2, 3], proxy.a.a1.a11
+		deepEq 'a.a1.a11', ref.value
 		proxy.c[0].c1[0].c12
-		fdeepEq 'c.c1.c12', ref.value
+		deepEq 'c.c1.c12', ref.value
 
 
+describe.only 'reshape', ->
+
+	it '1', -> deepEq {a1: 1}, reshape {a: ːa1}, {a: 1}
+	it '2', -> deepEq {a1: 1, b: 2}, reshape {a: ːa1, ːb}, {a: 1, b: 2}
 
 
 

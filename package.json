@@ -1,15 +1,22 @@
 {
   "name": "ramda-extras",
-  "version": "0.4.16",
+  "version": "0.4.17",
   "description": "Some few functions I feel was missing in ramda",
-  "main": "ramda-extras.js",
+  "main": "src/ramda-extras.coffee",
   "scripts": {
-    "test": "mocha 'src/**/test*.coffee' --watch --compilers coffee:coffeescript/register --transpile --slow 1",
+    "test": "mocha src/**/test*.coffee --watch --watch-files src/**/test__ramda-extras.coffee,src/ramda-extras.coffee --require coffeescript/register",
+    "testtape": "tape-watch ./src/tape__*.coffee --require coffeescript/register --transpile -p tap-spec",
+    "testmocha": "mocha --watch --watch-files src/**/test*.coffee --recursive --require coffeescript/register 'src/**/test*.coffee' --transpile",
+    "testmocha2": "mocha --require coffeescript/register --watch --watch-files src, src/**/test*.coffee",
+    "testold": "mocha 'src/**/test*.coffee' --watch --compilers coffee:coffeescript/register coffee:babel-register --transpile --slow 1",
     "clean": "rimraf *.js",
     "build": "coffee -o ./ -c src/",
-    "dist": "npm run clean && npm run build",
-    "pub": "npm run dist && npm publish && npm run clean"
+    "dist": "npm run clean && npm run build && npm run sedjs",
+    "pub": "npm run dist && npm publish && npm run clean && npm run sedcoffee",
+    "sedjs": "sed -i '' -e 's/ramda-extras.coffee\"/ramda-extras.js\"/g' ./package.json",
+    "sedcoffee": "sed -i '' -e 's/ramda-extras.js\"/ramda-extras.coffee\"/g' ./package.json"
   },
+
   "repository": {
     "type": "git",
     "url": "https://github.com/Cottin/ramda-extras.git"
@@ -20,7 +27,9 @@
   "author": "Victor Cottin <victor@cottin.se> (http://www.cottin.se/)",
   "license": "MIT",
   "devDependencies": {
-    "coffeescript": "^2.3.2",
+    "babel-register": "^6.26.0",
+    "coffeescript": "^2.5.1",
+    "mocha": "^8.0.1",
     "rimraf": "^2.4.3",
     "testhelp": "^0.1.4"
   },

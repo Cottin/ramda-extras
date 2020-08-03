@@ -1,4 +1,4 @@
-{addIndex, anyPass, append, assoc, chain, clamp, complement, compose, composeP, contains, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, join, keys, length, map, mapObjIndexed, match, max, merge, min, path, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj} = require 'ramda' #auto_require: ramda
+import addIndex from "ramda/es/addIndex"; import anyPass from "ramda/es/anyPass"; import append from "ramda/es/append"; import assoc from "ramda/es/assoc"; import chain from "ramda/es/chain"; import complement from "ramda/es/complement"; import compose from "ramda/es/compose"; import composeP from "ramda/es/composeP"; import contains from "ramda/es/contains"; import curry from "ramda/es/curry"; import difference from "ramda/es/difference"; import drop from "ramda/es/drop"; import equals from "ramda/es/equals"; import flip from "ramda/es/flip"; import fromPairs from "ramda/es/fromPairs"; import groupBy from "ramda/es/groupBy"; import has from "ramda/es/has"; import head from "ramda/es/head"; import init from "ramda/es/init"; import isEmpty from "ramda/es/isEmpty"; import isNil from "ramda/es/isNil"; import join from "ramda/es/join"; import keys from "ramda/es/keys"; import length from "ramda/es/length"; import map from "ramda/es/map"; import mapObjIndexed from "ramda/es/mapObjIndexed"; import match from "ramda/es/match"; import max from "ramda/es/max"; import merge from "ramda/es/merge"; import min from "ramda/es/min"; import path from "ramda/es/path"; import pickAll from "ramda/es/pickAll"; import pipe from "ramda/es/pipe"; import prop from "ramda/es/prop"; import reduce from "ramda/es/reduce"; import reject from "ramda/es/reject"; import set from "ramda/es/set"; import split from "ramda/es/split"; import test from "ramda/es/test"; import toPairs from "ramda/es/toPairs"; import type from "ramda/es/type"; import union from "ramda/es/union"; import values from "ramda/es/values"; import without from "ramda/es/without"; import zipObj from "ramda/es/zipObj"; #auto_require: esramda
 [ːFunction, ːAsyncFunction, ːSet, ːNull, ːc2, ːObject, ːArray, ːc1, ːString, ːBoolean, ːNumber] = ['Function', 'AsyncFunction', 'Set', 'Null', 'c2', 'Object', 'Array', 'c1', 'String', 'Boolean', 'Number'] #auto_sugar
 qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
 qqq = (f) -> console.log match(/return (.*);/, f.toString())[1], JSON.stringify(f(), null, 2)
@@ -15,7 +15,7 @@ NYIE = NotYetImplementedError
 # ALIASES
 # ----------------------------------------------------------------------------------------------------------
 
-mapO = mapObjIndexed
+export mapO = mapObjIndexed
 
 
 # ----------------------------------------------------------------------------------------------------------
@@ -24,17 +24,17 @@ mapO = mapObjIndexed
 
 # [n] -> n
 # returns the biggest number of a list
-maxIn = reduce max, -Infinity
+export maxIn = reduce max, -Infinity
 
 # [n] -> n
 # returns the smallest number of a list
-minIn = reduce min, Infinity
+export minIn = reduce min, Infinity
 
-mapI = addIndex map
+export mapI = addIndex map
 
 # [x] -> [x]
 # appends or removes x from list
-toggle = curry (x, xs) ->
+export toggle = curry (x, xs) ->
 	if isNil xs then return [x]
 	if contains x, xs then without [x], xs else append x, xs
 
@@ -42,19 +42,11 @@ toggle = curry (x, xs) ->
 # OBJECT
 # ----------------------------------------------------------------------------------------------------------
 
-#
-reshape = (spec, o) ->
-	newO = {}
-	for k, v of spec
-		if k[0] == 'ː' && o[v] != undefined then newO[v] = o[v]
-		else if o[k] != undefined then newO[v] = o[k]
-	return newO
-
-# {k: v} -> [k, v]   # Converts an object with only one key and one value to a pair
-toPair = (o) -> toPairs(o)[0]
+# {addIndex, anyPass, append, assoc, chain, complement, compose, composeP, contains, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, join, keys, length, map, mapObjIndexed, match, max, merge, min, path, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj} -> [k, v]   # Converts an object with only one key and one value to a pair
+export toPair = (o) -> toPairs(o)[0]
 
 # like http://ramdajs.com/docs/#pickAll but instead of undefined it returns the value of the key in the first argument
-pickOr = (keysAndDefaults, o) ->
+export pickOr = (keysAndDefaults, o) ->
 	picked = pickAll keys(keysAndDefaults), o
 	valueOrDefault = (v, k) -> if v == undefined then prop(k, keysAndDefaults) else v
 	return mapObjIndexed valueOrDefault, picked
@@ -63,7 +55,7 @@ pickOr = (keysAndDefaults, o) ->
 # Accepts paths as 'a.b.c' or ['a', 'b', 'c']
 # e.g.	pickRec ['a.a1', 'b'], {a: {a1: 1, a2: 2}, b: 2, c: 3}
 # 			returns {a: {a1: 1}, b: 2}
-pickRec = (paths, o) ->
+export pickRec = (paths, o) ->
 	ensureArray = (k) -> if type(k) == 'String' then split '.', k else k
 	paths_ = map ensureArray, paths
 
@@ -76,14 +68,14 @@ pickRec = (paths, o) ->
 		else assoc k, pickRec(v, o[k]), acc
 
 # stolen from https://github.com/ramda/ramda/blob/master/src/internal/_isThenable.js
-isThenable = (value) -> value != null and value == Object(value) and typeof value.then == 'function'
+export isThenable = (value) -> value != null and value == Object(value) and typeof value.then == 'function'
 
-isIterable = (o) -> !isNil(o) && typeof o[Symbol.iterator] == 'function'
+export isIterable = (o) -> !isNil(o) && typeof o[Symbol.iterator] == 'function'
 
 
 # ((a, v, k) -> a) -> a -> o -> a
 # NOTE: there is a caviat with this: https://github.com/ramda/ramda/issues/1067
-reduceO = curry (f, init, o) ->
+export reduceO = curry (f, init, o) ->
 	callF = (acc, [k, v]) -> f acc, v, k
 	return reduce callF, init, toPairs(o)
 
@@ -144,17 +136,17 @@ _change = (spec, a, undo, total, modify) ->
 	return newA
 
 # changes a given spec without modifying a
-change = curry (spec, a) -> _change spec, a, undefined, undefined, false
+export change = curry (spec, a) -> _change spec, a, undefined, undefined, false
 
 # like change but modifies a
-changeM = curry (spec, a) -> _change spec, a, undefined, undefined, true
+export changeM = curry (spec, a) -> _change spec, a, undefined, undefined, true
 
 # like change but gives an undo spec and a total spec
 change.meta = curry (spec, a, undo, total) -> _change spec, a, undo, total, false
 changeM.meta = curry (spec, a, undo, total) -> _change spec, a, undo, total, true
 
 # true if deps are affected by total changes
-isAffected = (deps, total) ->
+export isAffected = (deps, total) ->
 	for k, v of deps
 		if ! has k, total then continue
 		switch type v
@@ -168,7 +160,7 @@ isAffected = (deps, total) ->
 
 # Returns the asymetric difference between a and b
 # You can think of it as "what changes do I have to make to a in order to get b?"
-diff = (l, r) ->
+export diff = (l, r) ->
 	res = {}
 	allKeys = union keys(l), keys(r)
 	for k in allKeys
@@ -447,8 +439,6 @@ dottedApi = (keysAndValues, f) ->
 
 
 recursiveProxy = (o, handler, path=[]) ->
-	if type(o) != 'Object' then return o
-
 	subProxy = {}
 	for p of o
 		if type(o[p]) == 'Object'
@@ -463,7 +453,6 @@ recursiveProxy = (o, handler, path=[]) ->
 			if type(prop) == 'Symbol' then pathToUse = join '.', path
 			else pathToUse = $ path, append(prop), join('.')
 			handler.get o, prop, pathToUse
-
 
 	return new Proxy(subProxy, callHandler)
 
@@ -505,43 +494,6 @@ _q = (asStr, f) ->
 	console.log '' # new line
 	if asStr then console.log s, JSON.stringify(f(), null, 2)
 	else console.log s, f()
-
-
-
-
-
-# ----------------------------------------------------------------------------------------------------------
-# CONVENIENCE STUFF
-# ----------------------------------------------------------------------------------------------------------
-# prependF = (s) -> 'f'+s
-# flipAllAndPrependF = compose fromPairs, map(adjust(prependF, 0)), toPairs,
-# mapObjIndexed(flip)
-
-# ramdaFlipped = flipAllAndPrependF R
-
-# flippable = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func, toggle}
-
-# nonFlippable = {toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_,
-# $, $_, $$, $$_, pipe_,
-# isThenable, isIterable, isNotNil, toStr, clamp,
-# superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq, arg0, arg1, arg2, undef, satisfies,
-# customError, dottedApi, recursiveProxy}
-
-
-# module.exports = mergeAll [
-# 	ramdaFlipped,
-# 	flippable,
-# 	flipAllAndPrependF(flippable), 
-# 	nonFlippable,
-# 	{version: '0.4.9'}
-# ]
-
-module.exports = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func, toggle,
-toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_, $, $_, $$, $$_, pipe_, isThenable, isIterable,
-isNotNil, toStr, clamp, superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, arg0, arg1, arg2, undef, satisfies,
-customError, dottedApi, recursiveProxy, reshape}
-	
-
 
 
 
