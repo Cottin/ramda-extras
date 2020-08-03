@@ -509,33 +509,6 @@ _q = (asStr, f) ->
 
 
 
-
-# ----------------------------------------------------------------------------------------------------------
-# CONVENIENCE STUFF
-# ----------------------------------------------------------------------------------------------------------
-# prependF = (s) -> 'f'+s
-# flipAllAndPrependF = compose fromPairs, map(adjust(prependF, 0)), toPairs,
-# mapObjIndexed(flip)
-
-# ramdaFlipped = flipAllAndPrependF R
-
-# flippable = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func, toggle}
-
-# nonFlippable = {toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_,
-# $, $_, $$, $$_, pipe_,
-# isThenable, isIterable, isNotNil, toStr, clamp,
-# superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, qq, qqq, arg0, arg1, arg2, undef, satisfies,
-# customError, dottedApi, recursiveProxy}
-
-
-# module.exports = mergeAll [
-# 	ramdaFlipped,
-# 	flippable,
-# 	flipAllAndPrependF(flippable), 
-# 	nonFlippable,
-# 	{version: '0.4.9'}
-# ]
-
 module.exports = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func, toggle,
 toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_, $, $_, $$, $$_, pipe_, isThenable, isIterable,
 isNotNil, toStr, clamp, superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, arg0, arg1, arg2, undef, satisfies,
