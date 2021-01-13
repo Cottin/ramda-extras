@@ -1,6 +1,6 @@
 {
   "name": "ramda-extras",
-  "version": "0.4.18",
+  "version": "0.4.19",
   "description": "Some few functions I feel was missing in ramda",
   "main": "src/ramda-extras.coffee",
   "scripts": {
@@ -13,10 +13,9 @@
     "build": "coffee -o ./ -c src/",
     "dist": "npm run clean && npm run build && npm run sedjs",
     "pub": "npm run dist && npm publish && npm run clean && npm run sedcoffee",
-    "sedjs": "sed -i '' -e 's/src\\\/ramda-extras.coffee\"/ramda-extras.js\"/g' ./package.json",
-    "sedcoffee": "sed -i '' -e 's/ramda-extras.js\"/src\\\/ramda-extras.coffee\"/g' ./package.json"
+    "sedjs": "sed -i '' -e 's/src\\/ramda-extras.coffee\"/ramda-extras.js\"/g' ./package.json",
+    "sedcoffee": "sed -i '' -e 's/ramda-extras.js\"/src\\/ramda-extras.coffee\"/g' ./package.json"
   },
-
   "repository": {
     "type": "git",
     "url": "https://github.com/Cottin/ramda-extras.git"
@@ -34,6 +33,6 @@
     "testhelp": "^0.1.4"
   },
   "dependencies": {
-    "ramda": "^0.25.0"
+    "ramda": "^0.27.1"
   }
 }

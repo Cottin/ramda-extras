@@ -1,7 +1,7 @@
 {addIndex, anyPass, append, assoc, chain, clamp, complement, compose, composeP, contains, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, join, keys, length, map, mapObjIndexed, match, max, merge, min, path, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj} = require 'ramda' #auto_require: ramda
-[ːFunction, ːAsyncFunction, ːSet, ːNull, ːc2, ːObject, ːArray, ːc1, ːString, ːBoolean, ːNumber] = ['Function', 'AsyncFunction', 'Set', 'Null', 'c2', 'Object', 'Array', 'c1', 'String', 'Boolean', 'Number'] #auto_sugar
+[ːNumber, ːc1, ːBoolean, ːSet, ːNull, ːAsyncFunction, ːArray, ːObject, ːFunction, ːString, ːc2] = ['Number', 'c1', 'Boolean', 'Set', 'Null', 'AsyncFunction', 'Array', 'Object', 'Function', 'String', 'c2'] #auto_sugar
 qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
-qqq = (f) -> console.log match(/return (.*);/, f.toString())[1], JSON.stringify(f(), null, 2)
+qqq = (...args) -> console.log ...args
 _ = (...xs) -> xs
 
 class NotYetImplementedError extends Error
@@ -42,12 +42,16 @@ toggle = curry (x, xs) ->
 # OBJECT
 # ----------------------------------------------------------------------------------------------------------
 
-#
+_withoutColon = (s) -> if s[0] == 'ː' then s[1..] else s
+
 reshape = (spec, o) ->
 	newO = {}
 	for k, v of spec
-		if k[0] == 'ː' && o[v] != undefined then newO[v] = o[v]
-		else if o[k] != undefined then newO[v] = o[k]
+		if type(v) == 'Object'
+			newO[_withoutColon(k)] = reshape v, o
+		else
+			if k[0] == 'ː' then newO[v] = o[v]
+			else if o[v] != undefined then newO[k] = o[v]
 	return newO
 
 # {k: v} -> [k, v]   # Converts an object with only one key and one value to a pair
@@ -129,6 +133,7 @@ _change = (spec, a, undo, total, modify) ->
 						newA[k] = _change v, a[k], undo[k], total[k]
 					else
 						newA[k] = _change v, a[k], undefined, undefined, modify
+			when 'Error' then newA[k] = v
 			else throw new Error "change does not yet support type #{type v}"
 
 		if nested then continue
@@ -369,7 +374,7 @@ class FuncError extends Error
 		@name = 'FuncError'
 		Error.captureStackTrace this, FuncError
 
-_satisfiesThrow = (o, spec, loose) ->
+satisfiesThrow = (o, spec, loose) ->
 	res = satisfies o, spec, loose
 	if ! isEmpty res
 		console.error 'Erroneous data to func:', o
@@ -377,12 +382,12 @@ _satisfiesThrow = (o, spec, loose) ->
 
 func = (spec, f) ->
 	(o) ->
-		_satisfiesThrow o, spec
+		satisfiesThrow o, spec
 		f o
 
 func.loose = (spec, f) ->
 	(o) ->
-		_satisfiesThrow o, spec, true
+		satisfiesThrow o, spec, true
 		f o
 
 o =
@@ -512,7 +517,7 @@ _q = (asStr, f) ->
 module.exports = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func, toggle,
 toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_, $, $_, $$, $$_, pipe_, isThenable, isIterable,
 isNotNil, toStr, clamp, superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, arg0, arg1, arg2, undef, satisfies,
-customError, dottedApi, recursiveProxy, reshape}
+satisfiesThrow, customError, dottedApi, recursiveProxy, reshape}
 	
 
 

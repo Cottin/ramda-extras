@@ -1,8 +1,8 @@
 {add, append, dec, empty, evolve, inc, isNil, match, merge, path, prop, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
-{change, changeM, pickRec, isAffected, diff, toggle, cc, cc_, doto, doto_, $, $_, $$, $$_, superFlip, isNilOrEmpty, PromiseProps, undef, satisfies} = RE = require 'ramda-extras' #auto_require: ramda-extras
-[ːb, ːa1] = ['b', 'a1'] #auto_sugar
+{change, changeM, pickRec, isAffected, diff, toggle, cc, cc_, doto, doto_, $, $_, $$, $$_, superFlip, isNilOrEmpty, PromiseProps, undef, satisfies, reshape} = RE = require 'ramda-extras' #auto_require: ramda-extras
+[ːb, ːa] = ['b', 'a'] #auto_sugar
 qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
-qqq = (f) -> console.log match(/return (.*);/, f.toString())[1], JSON.stringify(f(), null, 2)
+qqq = (...args) -> console.log ...args
 _ = (...xs) -> xs
 
 {eq, deepEq, deepEq_, fdeepEq, throws} = require 'testhelp' #auto_require: testhelp
@@ -316,9 +316,34 @@ describe 'fliped stuff', ->
 
 describe 'satisfies', ->
 	sat = satisfies
-	it 'String', ->
-		deepEq {a: 1}, sat {a: 1}, {a: String}
-		deepEq {}, sat {a: 'a'}, {a: String}
+	it.only 'String', ->
+		def = {
+			stripeId〳: String
+			email: String # email
+			address〳:
+				line1: String # address.line1
+				postal〳: String # address.postal_code
+				city〳: String # address.city
+				region〳: String # address.region
+			vatCountry: String # Always metadata.vatCountry. If using address, also address.country
+			company〳:
+				name: String # name
+				vatNo〳: String # TaxId.value
+		}
+		data = {
+			stripeId: 'cus_HtT1Ke62Z248Bj',
+			email: 'victor.cottin+1598277023896@gmail.com',
+			address: {},
+			vatCountry: undefined,
+			company: { name: 'We Code Better Nordic AB', vatNo: undefined }
+		}
+		deepEq {a: 1}, sat data, def
+		# deepEq {a: 1}, sat {a: {a1: 1}}, {a: String}
+		# deepEq {}, sat {a: 'a'}, {a: String}
+
+	# it.only 'String', ->
+	# 	deepEq {a: 1}, sat {a: 1}, {a: String}
+	# 	deepEq {}, sat {a: 'a'}, {a: String}
 
 	it 'Number', ->
 		deepEq {a: ''}, sat {a: ''}, {a: Number}
@@ -430,10 +455,10 @@ describe 'recursiveProxy', ->
 		deepEq 'c.c1.c12', ref.value
 
 
-describe.only 'reshape', ->
-
-	it '1', -> deepEq {a1: 1}, reshape {a: ːa1}, {a: 1}
-	it '2', -> deepEq {a1: 1, b: 2}, reshape {a: ːa1, ːb}, {a: 1, b: 2}
+describe 'reshape', ->
+	it '1', -> deepEq {a1: 1}, reshape {a1: ːa}, {a: 1}
+	it '2', -> deepEq {a1: 1, b: 2}, reshape {a1: ːa, ːb}, {a: 1, b: 2}
+	it '3', -> deepEq {a1: {a11: 1, b: 2}, b: 2}, reshape {a1: {a11: ːa, ːb}, ːb}, {a: 1, b: 2}
 
 
 
