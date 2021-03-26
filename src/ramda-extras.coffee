@@ -1,5 +1,5 @@
 {addIndex, anyPass, append, assoc, chain, clamp, complement, compose, composeP, contains, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, join, keys, length, map, mapObjIndexed, match, max, merge, min, path, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj} = require 'ramda' #auto_require: ramda
-[ːNumber, ːc1, ːBoolean, ːSet, ːNull, ːAsyncFunction, ːArray, ːObject, ːFunction, ːString, ːc2] = ['Number', 'c1', 'Boolean', 'Set', 'Null', 'AsyncFunction', 'Array', 'Object', 'Function', 'String', 'c2'] #auto_sugar
+[ːString, ːNull, ːAsyncFunction, ːNumber, ːFunction, ːSet, ːsub_from, ːObject, ːArray, ːc2, ːfrom, ːBoolean, ːc1] = ['String', 'Null', 'AsyncFunction', 'Number', 'Function', 'Set', 'sub_from', 'Object', 'Array', 'c2', 'from', 'Boolean', 'c1'] #auto_sugar
 qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
 qqq = (...args) -> console.log ...args
 _ = (...xs) -> xs
@@ -44,6 +44,7 @@ toggle = curry (x, xs) ->
 
 _withoutColon = (s) -> if s[0] == 'ː' then s[1..] else s
 
+# {to: ːfrom, sub: {sub_to: ːsub_from}}
 reshape = (spec, o) ->
 	newO = {}
 	for k, v of spec
