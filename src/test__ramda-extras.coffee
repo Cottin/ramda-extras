@@ -316,7 +316,7 @@ describe 'fliped stuff', ->
 
 describe 'satisfies', ->
 	sat = satisfies
-	it.only 'String', ->
+	it 'String', ->
 		def = {
 			stripeId〳: String
 			email: String # email
@@ -357,9 +357,10 @@ describe 'satisfies', ->
 		deepEq {a: 0}, sat {a: 0}, {a: ->}
 		deepEq {}, sat {a: ->}, {a: ->}
 
-	# it 'AsyncFunction', ->
-	# 	deepEq {a: 0}, sat {a: 0}, {a: -> await 1}
-	# 	deepEq {}, sat {a: -> await 2}, {a: -> await 1}
+	it 'AsyncFunction', ->
+		deepEq {}, sat {a: -> await 1}, {a: -> 2}
+		throws /not yet support type AsyncFunction/, ->
+			sat {a: 0}, {a: -> await 1}
 
 	it 'Object', ->
 		deepEq {a: 0}, sat {a: 0}, {a: Object}
