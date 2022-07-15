@@ -1,13 +1,13 @@
-{add, append, dec, empty, evolve, inc, isNil, match, merge, path, prop, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
-{change, changeM, pickRec, isAffected, diff, toggle, cc, cc_, doto, doto_, $, $_, $$, $$_, superFlip, isNilOrEmpty, PromiseProps, undef, satisfies, reshape} = RE = require 'ramda-extras' #auto_require: ramda-extras
-[ːb, ːa] = ['b', 'a'] #auto_sugar
+{add, append, curry, dec, empty, evolve, inc, isNil, match, merge, path, prop, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
+{change, changeM, pickRec, isAffected, diff, toggle, sumBy, cc, cc_, doto, doto_, $, $_, $$, $$_, $s, superFlip, isNilOrEmpty, PromiseProps, undef, satisfies, reshape} = RE = require 'ramda-extras' #auto_require: ramda-extras
+[ːa, ːb] = ['a', 'b'] #auto_sugar
 qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
 qqq = (...args) -> console.log ...args
 _ = (...xs) -> xs
 
 {eq, deepEq, deepEq_, fdeepEq, throws} = require 'testhelp' #auto_require: testhelp
 
-{undef, isNilOrEmpty, change, changeM, toggle, isAffected, diff, pickRec, superFlip, doto, doto_, $$, $$_, cc, cc_, PromiseProps, qq, qqq, satisfies, dottedApi, recursiveProxy, reshape} = RE = require './ramda-extras'
+{undef, isNilOrEmpty, change, changeM, toggle, isAffected, diff, pickRec, superFlip, doto, doto_, dotos, $$, $$_, cc, cc_, PromiseProps, qq, qqq, satisfies, dottedApi, recursiveProxy, reshape, $s, sumBy} = RE = require './ramda-extras'
 
 describe 'isNilOrEmpty', ->
 	it 'simple', ->
@@ -24,6 +24,10 @@ describe 'toggle', ->
 		deepEq [1, 2], toggle(3, [1, 2, 3])
 		deepEq [3], toggle(3, [])
 		deepEq [3], toggle(3, undefined)
+
+describe 'sumBy', ->
+	it '1', -> eq 3, sumBy 'a', [{a: 1}, {a: 0}, {a: 2}]
+	it '2', -> eq 3, sumBy (({a}) -> a), [{a: 1}, {a: 0}, {a: 2}]
 
 describe 'change', ->
 	changeTester = (spec, a, undo, total) ->
@@ -146,16 +150,16 @@ describe 'change', ->
 
 describe 'isAffected', ->
 	it 'simple', ->
-		eq true, isAffected {a: null}, {a: 1}
+		eq true, isAffected {a: 1}, {a: 1}
 
 	it 'dep deeper', ->
-		eq true, isAffected {a: {a1: {a11: null}}}, {a: undefined}
+		eq true, isAffected {a: {a1: {a11: 1}}}, {a: undefined}
 
 	it 'total deeper', ->
-		eq true, isAffected {a: null}, {a: {a1: {a11: undefined}}}
+		eq true, isAffected {a: 1}, {a: {a1: {a11: undefined}}}
 
 	it 'deep false', ->
-		eq false, isAffected {a: {a1: {a11: {a111: null}}}}, {a: {a1: {a11: {a112: undefined}}}}
+		eq false, isAffected {a: {a1: {a11: {a111: 1}}}}, {a: {a1: {a11: {a112: undefined}}}}
 
 describe 'diff', ->
 	it 'missing', ->
@@ -272,6 +276,11 @@ describe 'doto', ->
 	it 'with log', ->
 		eq 5, doto_(2, add(1), add(2))
 
+describe 'dotos', ->
+	addErr = curry (a, b) -> throw new Error "cannot add #{a} and #{b}"
+	it 'happy case', -> eq 5, dotos(2, add(1), add(2))
+	it 'simple case', -> eq 3, dotos(2, add(1), addErr(2))
+
 describe 'undef', ->
 	it '1', ->
 		eq undefined, undef(-> 1)()
@@ -305,9 +314,9 @@ describe 'cc', ->
 	it 'with log', ->
 		eq 7, cc_(add(1), add(2), 4)
 
-describe 'fliped stuff', ->
-	it 'simple cases', ->
-		eq 'Function', type RE.freduce
+# describe 'fliped stuff', ->
+# 	it 'simple cases', ->
+# 		eq 'Function', type RE.freduce
 
 # describe 'qq', ->
 	# it 'simple cases', ->
@@ -333,11 +342,10 @@ describe 'satisfies', ->
 		data = {
 			stripeId: 'cus_HtT1Ke62Z248Bj',
 			email: 'victor.cottin+1598277023896@gmail.com',
-			address: {},
 			vatCountry: undefined,
 			company: { name: 'We Code Better Nordic AB', vatNo: undefined }
 		}
-		deepEq {a: 1}, sat data, def
+		deepEq {}, sat data, def
 		# deepEq {a: 1}, sat {a: {a1: 1}}, {a: String}
 		# deepEq {}, sat {a: 'a'}, {a: String}
 

@@ -1,5 +1,5 @@
 {addIndex, anyPass, append, assoc, chain, clamp, complement, compose, composeP, contains, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, join, keys, length, map, mapObjIndexed, match, max, merge, min, path, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj} = require 'ramda' #auto_require: ramda
-[ːFunction, ːAsyncFunction, ːArray, ːString, ːNumber, ːfrom, ːSet, ːNull, ːBoolean, ːc2, ːsub_from, ːObject, ːc1] = ['Function', 'AsyncFunction', 'Array', 'String', 'Number', 'from', 'Set', 'Null', 'Boolean', 'c2', 'sub_from', 'Object', 'c1'] #auto_sugar
+[ːNumber, ːSet, ːArray, ːfrom, ːString, ːBoolean, ːFunction, ːObject, ːsub_from, ːc2, ːNull, ːc1, ːAsyncFunction] = ['Number', 'Set', 'Array', 'from', 'String', 'Boolean', 'Function', 'Object', 'sub_from', 'c2', 'Null', 'c1', 'AsyncFunction'] #auto_sugar
 qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
 qqq = (...args) -> console.log ...args
 _ = (...xs) -> xs
@@ -37,6 +37,12 @@ mapI = addIndex map
 toggle = curry (x, xs) ->
 	if isNil xs then return [x]
 	if contains x, xs then without [x], xs else append x, xs
+
+sumBy = curry (sOrF, xs) ->
+	f = sOrF
+	if type(sOrF) == 'String' then f = (o) -> o[sOrF]
+	return $ xs, reduce ((acc, o) -> acc + f o), 0
+
 
 # ----------------------------------------------------------------------------------------------------------
 # OBJECT
@@ -163,12 +169,20 @@ changeM.meta = curry (spec, a, undo, total) -> _change spec, a, undo, total, tru
 isAffected = (deps, total) ->
 	for k, v of deps
 		if ! has k, total then continue
-		switch type v
-			when 'Null' then return true
-			when 'Object'
-				if 'Object' != type total[k] then return true # = total[k] changed, we're dep on ancestor
-				else if isAffected v, total[k] then return true
-			else throw new Error "#{v} of type #{type v} is not a valid dependency object"
+		if v == 1 then return true
+		else if type(v) == 'Object'
+			if 'Object' != type total[k] then return true # = total[k] changed, we're dep on ancestor
+			else if isAffected v, total[k] then return true
+		else
+			console.log 'total', total
+			throw new Error "#{v} of type #{type v} is not a valid dependency object"
+
+		# switch type v
+		# 	when 'Null' then return true
+		# 	when 'Object'
+		# 		if 'Object' != type total[k] then return true # = total[k] changed, we're dep on ancestor
+		# 		else if isAffected v, total[k] then return true
+		# 	else throw new Error "#{v} of type #{type v} is not a valid dependency object"
 
 	return false
 
@@ -232,6 +246,22 @@ doto = (data, functions...) -> pipe(functions...)(data)
 doto_ = (data, functions...) -> pipe_(functions...)(data)
 $ = doto # trying out a new alias
 $_ = doto_ # trying out a new alias
+
+# dodo safe
+dotos = (data, f1, f2, f3, f4, f5, f6, f7, f8) ->
+	res = data
+	try
+		res = f1 res
+		res = f2 res
+		res = f3 res
+		res = f4 res
+		res = f5 res
+		res = f6 res
+		res = f7 res
+		res = f8 res
+	catch err
+		return res
+$s = dotos
 
 dotoCompose = (data, functions...) -> compose(functions...)(data)
 dotoCompose_ = (data, functions...) -> compose_(functions...)(data)
@@ -516,7 +546,7 @@ _q = (asStr, f) ->
 
 
 module.exports = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func, toggle,
-toPair, maxIn, minIn, cc, cc_, ccp, compose_, doto, doto_, $, $_, $$, $$_, pipe_, isThenable, isIterable,
+toPair, maxIn, minIn, sumBy, cc, cc_, ccp, compose_, doto, doto_, dotos, $, $_, $$, $$_, $s, pipe_, isThenable, isIterable,
 isNotNil, toStr, clamp, superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, arg0, arg1, arg2, undef, satisfies,
 satisfiesThrow, customError, dottedApi, recursiveProxy, reshape}
 	
