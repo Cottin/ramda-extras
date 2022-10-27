@@ -1,16 +1,15 @@
-{add, append, curry, dec, empty, evolve, inc, isNil, match, merge, path, prop, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
-{change, changeM, pickRec, isAffected, diff, toggle, sumBy, cc, cc_, doto, doto_, $, $_, $$, $$_, $s, superFlip, isNilOrEmpty, PromiseProps, undef, satisfies, reshape} = RE = require 'ramda-extras' #auto_require: ramda-extras
-[ːa, ːb] = ['a', 'b'] #auto_sugar
+{add, append, curry, dec, empty, evolve, inc, isNil, match, path, prop, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
+[ːb, ːa] = ['b', 'a'] #auto_sugar
 qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
 qqq = (...args) -> console.log ...args
 _ = (...xs) -> xs
 
-{eq, deepEq, deepEq_, fdeepEq, throws} = require 'testhelp' #auto_require: testhelp
+{eq, deepEq, fdeepEq, throws} = require 'comon/shared/testUtils'
 
 {undef, isNilOrEmpty, change, changeM, toggle, isAffected, diff, pickRec, superFlip, doto, doto_, dotos, $$, $$_, cc, cc_, PromiseProps, qq, qqq, satisfies, dottedApi, recursiveProxy, reshape, $s, sumBy} = RE = require './ramda-extras'
 
 describe 'isNilOrEmpty', ->
-	it 'simple', ->
+	it.only 'simple', ->
 		eq false, isNilOrEmpty(' ')
 		eq true, isNilOrEmpty('')
 		eq false, isNilOrEmpty([1])
@@ -56,7 +55,7 @@ describe 'change', ->
 	# it 'set key + same key in undo', ->
 	# 	# {a: 1}  {} {}
 	# 	res = changeTester {a: 2, b: 1}, {}, {a: 1}, {a: 0}
-	# 	deepEq_ [{a: 2, b: 1}, {a: 1}, {a: 2, b: 1}], res
+	# 	deepEq.log [{a: 2, b: 1}, {a: 1}, {a: 2, b: 1}], res
 
 	it 'set to null', ->
 		res = changeTester {a: null}, {a: 1, b: 2}, {}, {a: 2}
@@ -64,12 +63,12 @@ describe 'change', ->
 
 	it 'function', ->
 		res = changeTester (({a, b}) -> {a: inc(a), b: dec(b), c: 1}), {a: 1, b: 2}, {}, {a: 2, d: 3}
-		deepEq_ [{a: 2, b: 1, c: 1}, {}, {a: 2, d: 3}], res
+		deepEq.log [{a: 2, b: 1, c: 1}, {}, {a: 2, d: 3}], res
 
 	it 'date', ->
 		date1 = new Date
 		res = changeTester {a: date1}, {a: 1, b: 2}, {}, {a: 2}
-		deepEq_ [{a: date1, b: 2}, {a: 1}, {a: date1}], res
+		deepEq.log [{a: date1, b: 2}, {a: 1}, {a: date1}], res
 
 	it 'merge array + same key in total', ->
 		res = changeTester {a: [2, 3]}, {a: [1]}, {}, {a: [5]}
@@ -105,7 +104,7 @@ describe 'change', ->
 			res = changeTester {a: {a1: 1}}, a, {}, {}
 			eres = {a: {a1: 1, a2: 0}, b2: 3}
 			if meta then deepEq [eres, {a: {a1: null}}, {a: {a1: 1}}], res
-			else deepEq_ eres, res
+			else deepEq.log eres, res
 
 		it 'remove key', ->
 			a = {a: {a1: null, a2: 0}, b2: 3}

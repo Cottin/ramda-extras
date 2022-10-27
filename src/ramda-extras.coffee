@@ -1,7 +1,4 @@
-{addIndex, anyPass, append, assoc, chain, clamp, complement, compose, composeP, contains, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, join, keys, length, map, mapObjIndexed, match, max, merge, min, path, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj} = require 'ramda' #auto_require: ramda
-[ːsub_from, ːNumber, ːAsyncFunction, ːFunction, ːc2, ːfrom, ːBoolean, ːc1, ːObject, ːArray, ːNull, ːString, ːSet] = ['sub_from', 'Number', 'AsyncFunction', 'Function', 'c2', 'from', 'Boolean', 'c1', 'Object', 'Array', 'Null', 'String', 'Set'] #auto_sugar
-qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
-qqq = (...args) -> console.log ...args
+import addIndex from "ramda/es/addIndex"; import anyPass from "ramda/es/anyPass"; import append from "ramda/es/append"; import assoc from "ramda/es/assoc"; import chain from "ramda/es/chain"; import complement from "ramda/es/complement"; import compose from "ramda/es/compose"; import curry from "ramda/es/curry"; import difference from "ramda/es/difference"; import drop from "ramda/es/drop"; import equals from "ramda/es/equals"; import flip from "ramda/es/flip"; import fromPairs from "ramda/es/fromPairs"; import groupBy from "ramda/es/groupBy"; import has from "ramda/es/has"; import head from "ramda/es/head"; import init from "ramda/es/init"; import isEmpty from "ramda/es/isEmpty"; import isNil from "ramda/es/isNil"; import join from "ramda/es/join"; import keys from "ramda/es/keys"; import length from "ramda/es/length"; import map from "ramda/es/map"; import mapObjIndexed from "ramda/es/mapObjIndexed"; import match from "ramda/es/match"; import max from "ramda/es/max"; import min from "ramda/es/min"; import modify from "ramda/es/modify"; import path from "ramda/es/path"; import paths from "ramda/es/paths"; import pickAll from "ramda/es/pickAll"; import pipe from "ramda/es/pipe"; import prop from "ramda/es/prop"; import reduce from "ramda/es/reduce"; import reject from "ramda/es/reject"; import set from "ramda/es/set"; import split from "ramda/es/split"; import test from "ramda/es/test"; import toPairs from "ramda/es/toPairs"; import type from "ramda/es/type"; import union from "ramda/es/union"; import values from "ramda/es/values"; import without from "ramda/es/without"; import zipObj from "ramda/es/zipObj"; #auto_require: esramda
 _ = (...xs) -> xs
 
 class NotYetImplementedError extends Error
@@ -15,7 +12,7 @@ NYIE = NotYetImplementedError
 # ALIASES
 # ----------------------------------------------------------------------------------------------------------
 
-mapO = mapObjIndexed
+export mapO = mapObjIndexed
 
 
 # ----------------------------------------------------------------------------------------------------------
@@ -24,21 +21,21 @@ mapO = mapObjIndexed
 
 # [n] -> n
 # returns the biggest number of a list
-maxIn = reduce max, -Infinity
+export maxIn = reduce max, -Infinity
 
 # [n] -> n
 # returns the smallest number of a list
-minIn = reduce min, Infinity
+export minIn = reduce min, Infinity
 
-mapI = addIndex map
+export mapI = addIndex map
 
 # [x] -> [x]
 # appends or removes x from list
-toggle = curry (x, xs) ->
+export toggle = curry (x, xs) ->
 	if isNil xs then return [x]
 	if contains x, xs then without [x], xs else append x, xs
 
-sumBy = curry (sOrF, xs) ->
+export sumBy = curry (sOrF, xs) ->
 	f = sOrF
 	if type(sOrF) == 'String' then f = (o) -> o[sOrF]
 	return $ xs, reduce ((acc, o) -> acc + f o), 0
@@ -50,8 +47,8 @@ sumBy = curry (sOrF, xs) ->
 
 _withoutColon = (s) -> if s[0] == 'ː' then s[1..] else s
 
-# {to: ːfrom, sub: {sub_to: ːsub_from}}
-reshape = curry (spec, o) ->
+# {addIndex, anyPass, append, assoc, chain, complement, compose, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, join, keys, length, map, mapObjIndexed, match, max, min, modify, path, paths, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj}
+export reshape = curry (spec, o) ->
 	newO = {}
 	for k, v of spec
 		if type(v) == 'Object'
@@ -62,10 +59,10 @@ reshape = curry (spec, o) ->
 	return newO
 
 # {k: v} -> [k, v]   # Converts an object with only one key and one value to a pair
-toPair = (o) -> toPairs(o)[0]
+export toPair = (o) -> toPairs(o)[0]
 
 # like http://ramdajs.com/docs/#pickAll but instead of undefined it returns the value of the key in the first argument
-pickOr = (keysAndDefaults, o) ->
+export pickOr = (keysAndDefaults, o) ->
 	picked = pickAll keys(keysAndDefaults), o
 	valueOrDefault = (v, k) -> if v == undefined then prop(k, keysAndDefaults) else v
 	return mapObjIndexed valueOrDefault, picked
@@ -74,7 +71,7 @@ pickOr = (keysAndDefaults, o) ->
 # Accepts paths as 'a.b.c' or ['a', 'b', 'c']
 # e.g.	pickRec ['a.a1', 'b'], {a: {a1: 1, a2: 2}, b: 2, c: 3}
 # 			returns {a: {a1: 1}, b: 2}
-pickRec = (paths, o) ->
+export pickRec = (paths, o) ->
 	ensureArray = (k) -> if type(k) == 'String' then split '.', k else k
 	paths_ = map ensureArray, paths
 
@@ -87,14 +84,14 @@ pickRec = (paths, o) ->
 		else assoc k, pickRec(v, o[k]), acc
 
 # stolen from https://github.com/ramda/ramda/blob/master/src/internal/_isThenable.js
-isThenable = (value) -> value != null and value == Object(value) and typeof value.then == 'function'
+export isThenable = (value) -> value != null and value == Object(value) and typeof value.then == 'function'
 
-isIterable = (o) -> !isNil(o) && typeof o[Symbol.iterator] == 'function'
+export isIterable = (o) -> !isNil(o) && typeof o[Symbol.iterator] == 'function'
 
 
 # ((a, v, k) -> a) -> a -> o -> a
 # NOTE: there is a caviat with this: https://github.com/ramda/ramda/issues/1067
-reduceO = curry (f, init, o) ->
+export reduceO = curry (f, init, o) ->
 	callF = (acc, [k, v]) -> f acc, v, k
 	return reduce callF, init, toPairs(o)
 
@@ -159,10 +156,10 @@ _change = (spec, a, undo, total, modify) ->
 # Note: change can be expensive if spec is a big map {Entity: {1: {...}, 2: {...}}} and a is also a big map
 #				{Entity: {1: {...}, 3: {...}}}. In that case you might want to do
 #				change({entity: always(newState)}, currentCache)
-change = curry (spec, a) -> _change spec, a, undefined, undefined, false
+export change = curry (spec, a) -> _change spec, a, undefined, undefined, false
 
 # like change but modifies a
-changeM = curry (spec, a) -> _change spec, a, undefined, undefined, true
+export changeM = curry (spec, a) -> _change spec, a, undefined, undefined, true
 
 # like change but gives an undo spec and a total spec
 change.meta = curry (spec, a, undo, total) -> _change spec, a, undo, total, false
@@ -171,7 +168,7 @@ changeM.meta = curry (spec, a, undo, total) -> _change spec, a, undo, total, tru
 # true if deps are affected by total changes
 # dependency object dep should look like this:
 # deps = {a: {a1: {a2: 1, a3: 8}}, b: 2} (the value can be any truthy number)
-isAffected = (deps, total) ->
+export isAffected = (deps, total) ->
 	for k, v of deps
 		if ! has k, total then continue
 		if type(v) == 'Number' && !!v then return true
@@ -193,7 +190,7 @@ isAffected = (deps, total) ->
 
 # Returns the asymetric difference between a and b
 # You can think of it as "what changes do I have to make to a in order to get b?"
-diff = (l, r) ->
+export diff = (l, r) ->
 	res = {}
 	allKeys = union keys(l), keys(r)
 	for k in allKeys
@@ -229,33 +226,33 @@ diff = (l, r) ->
 # 			myTotalBalance = compose(sum, pluck('balance'))(accounts)
 #				# ... we can leave them out:
 #				myTotalBalance = cc sum, pluck('balance'), accounts
-cc = (functions..., data) -> compose(functions...)(data)
-cc_ = (functions..., data) -> compose_(functions...)(data)
+export cc = (functions..., data) -> compose(functions...)(data)
+export cc_ = (functions..., data) -> compose_(functions...)(data)
 
-arg0 = (f) -> (a0) -> f a0
-arg1 = (f) -> (a0, a1) -> f a1
-arg2 = (f) -> (a0, a1, a2) -> f a2
+export arg0 = (f) -> (a0) -> f a0
+export arg1 = (f) -> (a0, a1) -> f a1
+export arg2 = (f) -> (a0, a1, a2) -> f a2
 
 # Wraps a function for later calling and then returning undefined.
 # Good to use with immer since CoffeeScript returns something by default.
-undef = (f) ->
+export undef = (f) ->
 	() ->
 		f ...arguments
 		return undefined
 
 
 # as cc but handling thenables
-ccp = (functions..., data) -> composeP(functions...)(data)
+export ccp = (functions..., data) -> composeP(functions...)(data)
 
 
 # similar to https://clojuredocs.org/clojure.core/doto
-doto = (data, functions...) -> pipe(functions...)(data)
-doto_ = (data, functions...) -> pipe_(functions...)(data)
-$ = doto # trying out a new alias
-$_ = doto_ # trying out a new alias
+export doto = (data, functions...) -> pipe(functions...)(data)
+export doto_ = (data, functions...) -> pipe_(functions...)(data)
+export $ = doto # trying out a new alias
+export $_ = doto_ # trying out a new alias
 
 # dodo safe
-dotos = (data, f1, f2, f3, f4, f5, f6, f7, f8) ->
+export dotos = (data, f1, f2, f3, f4, f5, f6, f7, f8) ->
 	res = data
 	try
 		res = f1 res
@@ -268,14 +265,14 @@ dotos = (data, f1, f2, f3, f4, f5, f6, f7, f8) ->
 		res = f8 res
 	catch err
 		return res
-$s = dotos
+export $s = dotos
 
-dotoCompose = (data, functions...) -> compose(functions...)(data)
-dotoCompose_ = (data, functions...) -> compose_(functions...)(data)
-$$ = dotoCompose # trying out a new alias
-$$_ = dotoCompose_ # trying out a new alias
+export dotoCompose = (data, functions...) -> compose(functions...)(data)
+export dotoCompose_ = (data, functions...) -> compose_(functions...)(data)
+export $$ = dotoCompose # trying out a new alias
+export $$_ = dotoCompose_ # trying out a new alias
 
-compose_ = (functions...) ->
+export compose_ = (functions...) ->
 	log = (x) ->
 		console.log x
 		return x
@@ -283,7 +280,7 @@ compose_ = (functions...) ->
 	withLogs.push log
 	compose withLogs...
 
-pipe_ = (functions...) ->
+export pipe_ = (functions...) ->
 	log = (x) ->
 		console.log x
 		return x
@@ -298,7 +295,7 @@ pipe_ = (functions...) ->
 # http://bluebirdjs.com/docs/api/promise.props.html
 # https://stackoverflow.com/questions/44600771/equivalent-of-bluebird-promise-props-for-es6-promises
 # https://stackoverflow.com/a/50437423/416797
-PromiseProps = (o) -> zipObj keys(o), await Promise.all values(o)
+export PromiseProps = (o) -> zipObj keys(o), await Promise.all values(o)
 
 
 # f -> f
@@ -308,13 +305,13 @@ PromiseProps = (o) -> zipObj keys(o), await Promise.all values(o)
 # 				throws TypeError: reduce: list must be array or iterable
 #				superFlip(reduce)([1,2], 0, add)
 #					returns 3
-superFlip = (f) ->
+export superFlip = (f) ->
 	if f.length == 3 then curry (a, b, c) -> f c, b, a
 	else flip f
 
 # TODO: probably remove this since it's not perfect, see example output in node:
 # CustomError [ServerError]: No operation 'delete' for entity 'Record'
-customError = (name) ->
+export customError = (name) ->
 	class CustomError extends Error
 		constructor: (msg) ->
 			super msg
@@ -323,18 +320,18 @@ customError = (name) ->
 
 
 # FUNC
-_typeToStr = (t) ->
+export _typeToStr = (t) ->
 	switch t
-		when String then ːString
-		when Number then ːNumber
-		when Boolean then ːBoolean
-		when Array then ːArray
-		when Object then ːObject
-		when Set then ːSet
-		when null then ːNull
+		when String then :String
+		when Number then :Number
+		when Boolean then :Boolean
+		when Array then :Array
+		when Object then :Object
+		when Set then :Set
+		when null then :Null
 
 
-satisfies = (o, spec, loose = false) ->
+export satisfies = (o, spec, loose = false) ->
 	ret = {}
 	for k,v of o
 		t = spec[k] || optional = true && spec[k+'〳']
@@ -353,21 +350,21 @@ satisfies = (o, spec, loose = false) ->
 		ts = _typeToStr t
 		if ts == undefined
 
-			if ːFunction == type t
-				if ːFunction != type(v) && ːAsyncFunction != type v then ret[k] = v
+			if :Function == type t
+				if :Function != type(v) && :AsyncFunction != type v then ret[k] = v
 
-			else if ːObject == type t
+			else if :Object == type t
 				res = satisfies v, t, true
 				if ! isEmpty res then ret[k] = res
 
-			else if ːArray == type t
+			else if :Array == type t
 				# TODO: should probably be able to simplify the array case
 				if t.length == 1
 					elementTypeS = _typeToStr t[0]
 					if elementTypeS == undefined
-						if ːArray == type t[0]
+						if :Array == type t[0]
 							throw new Error 'NYI'
-						else if ːObject == type t[0]
+						else if :Object == type t[0]
 							for el in v
 								res = satisfies el, t[0], true
 								if ! isEmpty res then ret[k] = [res]
@@ -380,8 +377,8 @@ satisfies = (o, spec, loose = false) ->
 					elementTypeS1 = _typeToStr t[1]
 					if elementTypeS0 == undefined
 						if elementTypeS1 == undefined then throw new Error 'NYI'
-						else if ːArray == type t[0] then throw new Error 'NYI'
-						else if ːObject == type t[0]
+						else if :Array == type t[0] then throw new Error 'NYI'
+						else if :Object == type t[0]
 							for el in v
 								if ! isEmpty(satisfies(el, t[0], true)) && elementTypeS1 != type el then ret[k] = [el]
 						else throw new Error 'NYI'
@@ -391,7 +388,7 @@ satisfies = (o, spec, loose = false) ->
 				else
 					throw new Error 'satisfies does not yet allow for more than 2 types in array'
 
-			else if ːSet == type t
+			else if :Set == type t
 				if ! t.has v then ret[k] = v
 
 			else throw new Error "satisfies does not yet support type #{type t} in spec. But you can use it in data"
@@ -412,13 +409,13 @@ class FuncError extends Error
 		@name = 'FuncError'
 		Error.captureStackTrace this, FuncError
 
-satisfiesThrow = (o, spec, loose) ->
+export satisfiesThrow = (o, spec, loose) ->
 	res = satisfies o, spec, loose
 	if ! isEmpty res
 		console.error 'Erroneous data to func:', o
 		throw new FuncError sf0 res
 
-func = (spec, f) ->
+export func = (spec, f) ->
 	(o) ->
 		satisfiesThrow o, spec
 		f o
@@ -430,11 +427,11 @@ func.loose = (spec, f) ->
 
 o =
 	a1:
-		b1: [ːc1, ːc2]
-		b2: [ːc1, ːc2]
+		b1: [:c1, :c2]
+		b2: [:c1, :c2]
 	a2:
-		b1: [ːc1, ːc2]
-		b2: [ːc1, ːc2]
+		b1: [:c1, :c2]
+		b2: [:c1, :c2]
 
 
 class Dotted
@@ -456,7 +453,7 @@ class Dotted
 
 
 
-dottedApi = (keysAndValues, f) ->
+export dottedApi = (keysAndValues, f) ->
 	# inverted index {a: ['a1', 'a2']} -> {a1: 'a', a2: 'a'}
 	vk = {}
 	for k, vals of keysAndValues
@@ -489,7 +486,7 @@ dottedApi = (keysAndValues, f) ->
 
 
 
-recursiveProxy = (o, handler, path=[]) ->
+export recursiveProxy = (o, handler, path=[]) ->
 	if type(o) != 'Object' then return o
 
 	subProxy = {}
@@ -517,16 +514,16 @@ recursiveProxy = (o, handler, path=[]) ->
 # TYPE
 # ----------------------------------------------------------------------------------------------------------
 
-isNotNil = complement isNil
+export isNotNil = complement isNil
 
-isNilOrEmpty = anyPass [isNil, isEmpty]
+export isNilOrEmpty = anyPass [isNil, isEmpty]
 
 
 # ----------------------------------------------------------------------------------------------------------
 # STRING
 # ----------------------------------------------------------------------------------------------------------
 
-toStr = (a) -> a + ''
+export toStr = (a) -> a + ''
 
 
 # ----------------------------------------------------------------------------------------------------------
@@ -538,8 +535,8 @@ _sify = (k, v) ->
 	else if type(v) == 'AsyncFunction' then '[AsyncFunction]'
 	else v
 
-sf0 = (o) -> JSON.stringify o, _sify, 0
-sf2 = (o) -> JSON.stringify o, _sify, 2
+export sf0 = (o) -> JSON.stringify o, _sify, 0
+export sf2 = (o) -> JSON.stringify o, _sify, 2
 
 _q = (asStr, f) ->
 	if 'Function' != type(f) then return console.warn("q(q) should be called with function not #{f}")
@@ -551,11 +548,6 @@ _q = (asStr, f) ->
 
 
 
-
-module.exports = {mapI, pickOr, change, changeM, pickRec, reduceO, mapO, isAffected, diff, func, toggle,
-toPair, maxIn, minIn, sumBy, cc, cc_, ccp, compose_, doto, doto_, dotos, $, $_, $$, $$_, $s, pipe_, isThenable, isIterable,
-isNotNil, toStr, clamp, superFlip, isNilOrEmpty, PromiseProps, sf0, sf2, arg0, arg1, arg2, undef, satisfies,
-satisfiesThrow, customError, dottedApi, recursiveProxy, reshape}
 	
 
 
