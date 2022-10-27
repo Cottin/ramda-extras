@@ -1,5 +1,5 @@
 {addIndex, anyPass, append, assoc, chain, clamp, complement, compose, composeP, contains, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, join, keys, length, map, mapObjIndexed, match, max, merge, min, path, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj} = require 'ramda' #auto_require: ramda
-[ːNumber, ːSet, ːArray, ːfrom, ːString, ːBoolean, ːFunction, ːObject, ːsub_from, ːc2, ːNull, ːc1, ːAsyncFunction] = ['Number', 'Set', 'Array', 'from', 'String', 'Boolean', 'Function', 'Object', 'sub_from', 'c2', 'Null', 'c1', 'AsyncFunction'] #auto_sugar
+[ːsub_from, ːNumber, ːAsyncFunction, ːFunction, ːc2, ːfrom, ːBoolean, ːc1, ːObject, ːArray, ːNull, ːString, ːSet] = ['sub_from', 'Number', 'AsyncFunction', 'Function', 'c2', 'from', 'Boolean', 'c1', 'Object', 'Array', 'Null', 'String', 'Set'] #auto_sugar
 qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
 qqq = (...args) -> console.log ...args
 _ = (...xs) -> xs
@@ -156,6 +156,9 @@ _change = (spec, a, undo, total, modify) ->
 	return newA
 
 # changes a given spec without modifying a
+# Note: change can be expensive if spec is a big map {Entity: {1: {...}, 2: {...}}} and a is also a big map
+#				{Entity: {1: {...}, 3: {...}}}. In that case you might want to do
+#				change({entity: always(newState)}, currentCache)
 change = curry (spec, a) -> _change spec, a, undefined, undefined, false
 
 # like change but modifies a
@@ -166,15 +169,17 @@ change.meta = curry (spec, a, undo, total) -> _change spec, a, undo, total, fals
 changeM.meta = curry (spec, a, undo, total) -> _change spec, a, undo, total, true
 
 # true if deps are affected by total changes
+# dependency object dep should look like this:
+# deps = {a: {a1: {a2: 1, a3: 8}}, b: 2} (the value can be any truthy number)
 isAffected = (deps, total) ->
 	for k, v of deps
 		if ! has k, total then continue
-		if v == 1 then return true
+		if type(v) == 'Number' && !!v then return true
 		else if type(v) == 'Object'
 			if 'Object' != type total[k] then return true # = total[k] changed, we're dep on ancestor
 			else if isAffected v, total[k] then return true
 		else
-			console.log 'total', total
+			console.log 'total', total, 'deps', deps
 			throw new Error "#{v} of type #{type v} is not a valid dependency object"
 
 		# switch type v
@@ -204,7 +209,9 @@ diff = (l, r) ->
 				when 'Object'
 					if 'Object' != type l[k] then res[k] = r[k]
 					else res[k] = diff l[k], r[k]
-				when 'Function' then throw new Error('diff does not support functions')
+				when 'Function'
+					if l[k] == r[k] then continue
+					else res[k] = r[k]
 				when 'RegExp' then throw new Error('diff does not support RegExps')
 
 

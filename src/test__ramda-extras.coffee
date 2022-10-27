@@ -161,7 +161,7 @@ describe 'isAffected', ->
 	it 'deep false', ->
 		eq false, isAffected {a: {a1: {a11: {a111: 1}}}}, {a: {a1: {a11: {a112: undefined}}}}
 
-describe 'diff', ->
+describe.only 'diff', ->
 	it 'missing', ->
 		res = diff {ab: 1}, {}
 		deepEq {ab: undefined}, res
@@ -181,6 +181,18 @@ describe 'diff', ->
 	it 'no change array', ->
 		res = diff {ab: [1, 2]}, {ab: [1, 2]}
 		deepEq {}, res
+
+	it 'functions same', ->
+		f1 = () -> 1
+		f2 = () -> 1
+		res = diff {a: f1}, {a: f1}
+		deepEq {}, res
+
+	it 'functions different', ->
+		f1 = () -> 1
+		f2 = () -> 1
+		res = diff {a: f1}, {a: f2}
+		deepEq {a: f2}, res
 
 	it 'reuses values from b', ->
 		a = {ab: null}
@@ -231,8 +243,8 @@ describe 'diff', ->
 			res = diff a, b
 			eq b.a.a1, res.a.a1
 
-		it 'function', ->
-			throws /diff does not support functions/, -> diff {a: {a1: 1}}, {a: {a1: ->}}
+		# it 'function', ->
+		# 	throws /diff does not support functions/, -> diff {a: {a1: 1}}, {a: {a1: ->}}
 
 		it 'RegExp', ->
 			throws /diff does not support RegExps/, -> diff {a: {a1: 1}}, {a: {a1: /a/}}
