@@ -1,2 +1,18 @@
-node_modules
-lib
+# dependencies
+/node_modules
+
+# testing
+/temp
+
+# misc
+.DS_Store
+
+# debug
+npm-debug.log*
+
+# local env files
+.env
+.env.development
+.env.test
+.env.production
+
