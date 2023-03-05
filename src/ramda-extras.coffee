@@ -1,4 +1,4 @@
-import addIndex from "ramda/es/addIndex"; import anyPass from "ramda/es/anyPass"; import append from "ramda/es/append"; import assoc from "ramda/es/assoc"; import chain from "ramda/es/chain"; import complement from "ramda/es/complement"; import compose from "ramda/es/compose"; import curry from "ramda/es/curry"; import difference from "ramda/es/difference"; import drop from "ramda/es/drop"; import equals from "ramda/es/equals"; import flip from "ramda/es/flip"; import fromPairs from "ramda/es/fromPairs"; import groupBy from "ramda/es/groupBy"; import has from "ramda/es/has"; import head from "ramda/es/head"; import init from "ramda/es/init"; import isEmpty from "ramda/es/isEmpty"; import isNil from "ramda/es/isNil"; import join from "ramda/es/join"; import keys from "ramda/es/keys"; import length from "ramda/es/length"; import map from "ramda/es/map"; import mapObjIndexed from "ramda/es/mapObjIndexed"; import match from "ramda/es/match"; import max from "ramda/es/max"; import min from "ramda/es/min"; import modify from "ramda/es/modify"; import path from "ramda/es/path"; import paths from "ramda/es/paths"; import pickAll from "ramda/es/pickAll"; import pipe from "ramda/es/pipe"; import prop from "ramda/es/prop"; import reduce from "ramda/es/reduce"; import reject from "ramda/es/reject"; import set from "ramda/es/set"; import split from "ramda/es/split"; import test from "ramda/es/test"; import toPairs from "ramda/es/toPairs"; import type from "ramda/es/type"; import union from "ramda/es/union"; import values from "ramda/es/values"; import without from "ramda/es/without"; import zipObj from "ramda/es/zipObj"; #auto_require: esramda
+import addIndex from "ramda/es/addIndex"; import anyPass from "ramda/es/anyPass"; import append from "ramda/es/append"; import assoc from "ramda/es/assoc"; import chain from "ramda/es/chain"; import complement from "ramda/es/complement"; import compose from "ramda/es/compose"; import curry from "ramda/es/curry"; import difference from "ramda/es/difference"; import drop from "ramda/es/drop"; import equals from "ramda/es/equals"; import flip from "ramda/es/flip"; import fromPairs from "ramda/es/fromPairs"; import groupBy from "ramda/es/groupBy"; import has from "ramda/es/has"; import head from "ramda/es/head"; import includes from "ramda/es/includes"; import init from "ramda/es/init"; import isEmpty from "ramda/es/isEmpty"; import isNil from "ramda/es/isNil"; import join from "ramda/es/join"; import keys from "ramda/es/keys"; import length from "ramda/es/length"; import map from "ramda/es/map"; import mapObjIndexed from "ramda/es/mapObjIndexed"; import match from "ramda/es/match"; import max from "ramda/es/max"; import mergeRight from "ramda/es/mergeRight"; import min from "ramda/es/min"; import modify from "ramda/es/modify"; import path from "ramda/es/path"; import paths from "ramda/es/paths"; import pickAll from "ramda/es/pickAll"; import pipe from "ramda/es/pipe"; import prop from "ramda/es/prop"; import reduce from "ramda/es/reduce"; import reject from "ramda/es/reject"; import set from "ramda/es/set"; import split from "ramda/es/split"; import test from "ramda/es/test"; import toPairs from "ramda/es/toPairs"; import type from "ramda/es/type"; import union from "ramda/es/union"; import values from "ramda/es/values"; import without from "ramda/es/without"; import zipObj from "ramda/es/zipObj"; #auto_require: esramda
 _ = (...xs) -> xs
 
 class NotYetImplementedError extends Error
@@ -33,7 +33,7 @@ export mapI = addIndex map
 # appends or removes x from list
 export toggle = curry (x, xs) ->
 	if isNil xs then return [x]
-	if contains x, xs then without [x], xs else append x, xs
+	if includes x, xs then without [x], xs else append x, xs
 
 export sumBy = curry (sOrF, xs) ->
 	f = sOrF
@@ -47,7 +47,7 @@ export sumBy = curry (sOrF, xs) ->
 
 _withoutColon = (s) -> if s[0] == 'ː' then s[1..] else s
 
-# {addIndex, anyPass, append, assoc, chain, complement, compose, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, init, isEmpty, isNil, join, keys, length, map, mapObjIndexed, match, max, min, modify, path, paths, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj}
+# {addIndex, anyPass, append, assoc, chain, complement, compose, curry, difference, drop, equals, flip, fromPairs, groupBy, has, head, includes, init, isEmpty, isNil, join, keys, length, map, mapObjIndexed, match, max, mergeRight, min, modify, path, paths, pickAll, pipe, prop, reduce, reject, set, split, test, toPairs, type, union, values, without, zipObj}
 export reshape = curry (spec, o) ->
 	newO = {}
 	for k, v of spec
@@ -399,7 +399,7 @@ export satisfies = (o, spec, loose = false) ->
 	missing = $ o, keys, difference(keys(spec)), reject test(/〳$/)
 	if ! isEmpty missing
 		missingObj = $ missing, (map (k) -> [k, 'MISSING']), fromPairs
-		ret = merge ret, missingObj
+		ret = mergeRight ret, missingObj
 
 	return ret
 

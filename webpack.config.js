@@ -33,7 +33,7 @@ const config = {
 				test: /\.coffee$/,
 				use: [
 					{loader: 'coffee-loader'},
-					{loader: path.resolve(__dirname, '../hack/keywordCoffeeLoader.js')},
+					{loader: path.resolve(__dirname, '../hack/loaders/keywordCoffeeLoader.js')},
 				]
 			},
 		],
