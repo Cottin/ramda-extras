@@ -6,10 +6,10 @@ _ = (...xs) -> xs
 
 {eq, deepEq, fdeepEq, throws} = require 'comon/shared/testUtils'
 
-{undef, isNilOrEmpty, change, changeM, toggle, isAffected, diff, pickRec, superFlip, doto, doto_, dotos, $$, $$_, cc, cc_, PromiseProps, qq, qqq, satisfies, dottedApi, recursiveProxy, reshape, $s, sumBy} = RE = require './ramda-extras'
+{undef, isNilOrEmpty, change, changeM, toggle, isAffected, diff, pickRec, superFlip, doto, doto_, dotos, $$, $$_, cc, cc_, PromiseProps, qq, qqq, dottedApi, recursiveProxy, reshape, $s, sumBy} = RE = require './ramda-extras'
 
 describe 'isNilOrEmpty', ->
-	it.only 'simple', ->
+	it 'simple', ->
 		eq false, isNilOrEmpty(' ')
 		eq true, isNilOrEmpty('')
 		eq false, isNilOrEmpty([1])
@@ -160,7 +160,7 @@ describe 'isAffected', ->
 	it 'deep false', ->
 		eq false, isAffected {a: {a1: {a11: {a111: 1}}}}, {a: {a1: {a11: {a112: undefined}}}}
 
-describe.only 'diff', ->
+describe 'diff', ->
 	it 'missing', ->
 		res = diff {ab: 1}, {}
 		deepEq {ab: undefined}, res
@@ -334,31 +334,141 @@ describe 'cc', ->
 		# eq undefined, qq -> 1
 		# eq undefined, qqq -> 1
 
-describe 'satisfies', ->
-	sat = satisfies
-	it 'String', ->
-		def = {
-			stripeId〳: String
-			email: String # email
-			address〳:
-				line1: String # address.line1
-				postal〳: String # address.postal_code
-				city〳: String # address.city
-				region〳: String # address.region
-			vatCountry: String # Always metadata.vatCountry. If using address, also address.country
-			company〳:
-				name: String # name
-				vatNo〳: String # TaxId.value
-		}
-		data = {
-			stripeId: 'cus_HtT1Ke62Z248Bj',
-			email: 'victor.cottin+1598277023896@gmail.com',
-			vatCountry: undefined,
-			company: { name: 'We Code Better Nordic AB', vatNo: undefined }
-		}
-		deepEq {}, sat data, def
-		# deepEq {a: 1}, sat {a: {a1: 1}}, {a: String}
-		# deepEq {}, sat {a: 'a'}, {a: String}
+describe.only 'satisfies', ->
+	sat = RE.satisfies
+	it '_typeToStr', ->
+		eq 'String', RE._typeToStr String
+		eq 'Number', RE._typeToStr Number
+		eq 'Boolean', RE._typeToStr Boolean
+		eq 'Array', RE._typeToStr Array
+		eq 'Object', RE._typeToStr Object
+		eq 'Null', RE._typeToStr null
+		eq undefined, RE._typeToStr [1, 2]
+		eq undefined, RE._typeToStr new Set([1, 2])
+
+	describe 'simple', ->
+		it 'String', ->
+			deepEq {a: 1}, sat {a: 1}, {a: String}
+			deepEq {}, sat {a: ''}, {a: String}
+
+		it 'Number', ->
+			deepEq {a: ''}, sat {a: ''}, {a: Number}
+			deepEq {}, sat {a: 1}, {a: Number}
+
+		it 'Boolean', ->
+			deepEq {a: 0}, sat {a: 0}, {a: Boolean}
+			deepEq {}, sat {a: true}, {a: Boolean}
+
+		it 'Array', ->
+			deepEq {a: 0}, sat {a: 0}, {a: Array}
+			deepEq {}, sat {a: [1, 2, 3]}, {a: Array}
+
+		it 'Object', ->
+			deepEq {a: 0}, sat {a: 0}, {a: Object}
+			deepEq {}, sat {a: {}}, {a: Object}
+
+		it 'Set', ->
+			deepEq {a: [1, 2]}, sat {a: [1, 2]}, {a: Set}
+			deepEq {}, sat {a: new Set([1, 2])}, {a: Set}
+		
+	describe 'special cases', ->
+		it 'Function', ->
+			deepEq {a: 0}, sat {a: 0}, {a: ->}
+			deepEq {}, sat {a: ->}, {a: ->}
+
+			# Allow for Async functions but don't separate the cases
+			deepEq {}, sat {a: -> await 1}, {a: -> 2}
+			deepEq {}, sat {a: -> 1}, {a: -> await 2}
+			deepEq {a: 0}, sat {a: 0}, {a: -> await 2}
+
+		it 'Enum', ->
+			deepEq {a: 3}, sat {a: 3}, {a: new Set([1, 2])}
+			deepEq {}, sat {a: 2}, {a: new Set([1, 2])}
+
+	describe 'optional, required and extra (loose)', ->
+		it 'required 1', ->
+			deepEq {a: 'MISSING'}, sat {}, {a: Number}
+
+		it 'optional 1', ->
+			deepEq {}, sat {}, {a_: Number}
+
+		it 'extra with loose = false', ->
+			deepEq {b: 'NOT_IN_SPEC'}, sat {b: 1}, {a_: Number}, false
+
+		it 'extra with loose = true', ->
+			deepEq {}, sat {b: 1}, {a_: Number}, true
+
+		it 'required object', ->
+			deepEq {a: 'MISSING'}, sat {}, {a: Object}
+			deepEq {}, sat {a: {}}, {a: Object}
+
+		it 'optional with undefined', ->
+			deepEq {}, sat {a: undefined, b: 1}, {a_: Number, b: Number}
+
+		it 'required with undefined', ->
+			deepEq {a: 'MISSING (undefined)'}, sat {a: undefined, b: 1}, {a: Number, b: Number}
+
+		it 'required with null', ->
+			deepEq {a: 'MISSING (null)'}, sat {a: null, b: 1}, {a: Number, b: Number}
+
+	describe 'complex array', ->
+		it 'not array', ->
+			deepEq {a: ''}, sat {a: ''}, {a: [String]}
+
+		it 'not supporting more than one', ->
+			throws /Not yet supporting more than one type in array/, ->
+				sat {a: ['']}, {a: [String, Number]}
+
+		it 'Not right element', ->
+			deepEq {a: [1, '']}, sat {a: [1, '']}, {a: [String]}
+			deepEq {}, sat {a: ['', '2']}, {a: [String]}
+
+	describe 'complext object', ->
+		it 'Not object', ->
+			deepEq {a: 1}, sat {a: 1}, {a: {s: String}}
+			deepEq {}, sat {a: {}}, {a: {s_: String}}
+
+		it 'String, Number, Boolean', ->
+			deepEq {a: {n: ''}}, sat {a: {s: '', n: '', b: true}}, {a: {s: String, n: Number, b: Boolean}}
+			deepEq {}, sat {a: {s: '', n: 1, b: true}}, {a: {s: String, n: Number, b: Boolean}}
+
+	describe 'func', ->
+		func = RE.func
+		it 'simple', ->
+			func1 = func {a: Number}, ({a}) -> a + a
+			throws /Satisfies error/, ->
+				func1({a: 'hi'})
+
+		it 'loose', ->
+			func1 = func.loose {a: Number}, ({a}) -> a + a
+			eq 2, func1 {a: 1, b: 3}
+
+
+describe 'satisfiesOLD', ->
+	sat = RE.satisfiesOLD
+	# it 'String', ->
+	# 	def = {
+	# 		stripeId〳: String
+	# 		email: String # email
+	# 		address〳:
+	# 			line1: String # address.line1
+	# 			postal〳: String # address.postal_code
+	# 			city〳: String # address.city
+	# 			region〳: String # address.region
+	# 		vatCountry: String # Always metadata.vatCountry. If using address, also address.country
+	# 		company〳:
+	# 			name: String # name
+	# 			vatNo〳: String # TaxId.value
+	# 	}
+	# 	data = {
+	# 		stripeId: 'cus_HtT1Ke62Z248Bj',
+	# 		email: 'victor.cottin+1598277023896@gmail.com',
+	# 		vatCountry: undefined,
+	# 		company: { name: 'We Code Better Nordic AB', vatNo: undefined }
+	# 	}
+	# 	deepEq {}, sat data, def
+	# 	# deepEq {a: 1}, sat {a: {a1: 1}}, {a: String}
+	# 	# deepEq {}, sat {a: 'a'}, {a: String}
 
 	# it.only 'String', ->
 	# 	deepEq {a: 1}, sat {a: 1}, {a: String}

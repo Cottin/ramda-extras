@@ -1,6 +1,8 @@
 import addIndex from "ramda/es/addIndex"; import anyPass from "ramda/es/anyPass"; import append from "ramda/es/append"; import assoc from "ramda/es/assoc"; import chain from "ramda/es/chain"; import complement from "ramda/es/complement"; import compose from "ramda/es/compose"; import curry from "ramda/es/curry"; import difference from "ramda/es/difference"; import drop from "ramda/es/drop"; import equals from "ramda/es/equals"; import flip from "ramda/es/flip"; import fromPairs from "ramda/es/fromPairs"; import groupBy from "ramda/es/groupBy"; import has from "ramda/es/has"; import head from "ramda/es/head"; import includes from "ramda/es/includes"; import init from "ramda/es/init"; import isEmpty from "ramda/es/isEmpty"; import isNil from "ramda/es/isNil"; import join from "ramda/es/join"; import keys from "ramda/es/keys"; import length from "ramda/es/length"; import map from "ramda/es/map"; import mapObjIndexed from "ramda/es/mapObjIndexed"; import match from "ramda/es/match"; import max from "ramda/es/max"; import mergeRight from "ramda/es/mergeRight"; import min from "ramda/es/min"; import modify from "ramda/es/modify"; import path from "ramda/es/path"; import paths from "ramda/es/paths"; import pickAll from "ramda/es/pickAll"; import pipe from "ramda/es/pipe"; import prop from "ramda/es/prop"; import reduce from "ramda/es/reduce"; import reject from "ramda/es/reject"; import set from "ramda/es/set"; import split from "ramda/es/split"; import test from "ramda/es/test"; import toPairs from "ramda/es/toPairs"; import type from "ramda/es/type"; import union from "ramda/es/union"; import values from "ramda/es/values"; import without from "ramda/es/without"; import zipObj from "ramda/es/zipObj"; #auto_require: esramda
 _ = (...xs) -> xs
 
+export * from './ramda-extras2'
+
 class NotYetImplementedError extends Error
 	constructor: (msg) ->
 		super msg
@@ -319,19 +321,9 @@ export customError = (name) ->
 			Error.captureStackTrace this, CustomError
 
 
-# FUNC
-export _typeToStr = (t) ->
-	switch t
-		when String then :String
-		when Number then :Number
-		when Boolean then :Boolean
-		when Array then :Array
-		when Object then :Object
-		when Set then :Set
-		when null then :Null
 
 
-export satisfies = (o, spec, loose = false) ->
+export satisfiesOLD = (o, spec, loose = false) ->
 	ret = {}
 	for k,v of o
 		t = spec[k] || optional = true && spec[k+'〳']
@@ -350,21 +342,21 @@ export satisfies = (o, spec, loose = false) ->
 		ts = _typeToStr t
 		if ts == undefined
 
-			if :Function == type t
-				if :Function != type(v) && :AsyncFunction != type v then ret[k] = v
+			if 'Function' == type t
+				if 'Function' != type(v) && 'AsyncFunction' != type v then ret[k] = v
 
-			else if :Object == type t
+			else if 'Object' == type t
 				res = satisfies v, t, true
 				if ! isEmpty res then ret[k] = res
 
-			else if :Array == type t
+			else if 'Array' == type t
 				# TODO: should probably be able to simplify the array case
 				if t.length == 1
 					elementTypeS = _typeToStr t[0]
 					if elementTypeS == undefined
-						if :Array == type t[0]
+						if 'Array' == type t[0]
 							throw new Error 'NYI'
-						else if :Object == type t[0]
+						else if 'Object' == type t[0]
 							for el in v
 								res = satisfies el, t[0], true
 								if ! isEmpty res then ret[k] = [res]
@@ -377,8 +369,8 @@ export satisfies = (o, spec, loose = false) ->
 					elementTypeS1 = _typeToStr t[1]
 					if elementTypeS0 == undefined
 						if elementTypeS1 == undefined then throw new Error 'NYI'
-						else if :Array == type t[0] then throw new Error 'NYI'
-						else if :Object == type t[0]
+						else if 'Array' == type t[0] then throw new Error 'NYI'
+						else if 'Object' == type t[0]
 							for el in v
 								if ! isEmpty(satisfies(el, t[0], true)) && elementTypeS1 != type el then ret[k] = [el]
 						else throw new Error 'NYI'
@@ -388,7 +380,7 @@ export satisfies = (o, spec, loose = false) ->
 				else
 					throw new Error 'satisfies does not yet allow for more than 2 types in array'
 
-			else if :Set == type t
+			else if 'Set' == type t
 				if ! t.has v then ret[k] = v
 
 			else throw new Error "satisfies does not yet support type #{type t} in spec. But you can use it in data"
@@ -403,35 +395,47 @@ export satisfies = (o, spec, loose = false) ->
 
 	return ret
 
-class FuncError extends Error
-	constructor: (msg) ->
-		super msg
-		@name = 'FuncError'
-		Error.captureStackTrace this, FuncError
+# FUNC
+_typeToStr = (t) ->
+	switch t
+		when String then 'String'
+		when Number then 'Number'
+		when Boolean then 'Boolean'
+		when Array then 'Array'
+		when Object then 'Object'
+		when Set then 'Set'
+		when null then 'Null'
 
-export satisfiesThrow = (o, spec, loose) ->
-	res = satisfies o, spec, loose
-	if ! isEmpty res
-		console.error 'Erroneous data to func:', o
-		throw new FuncError sf0 res
 
-export func = (spec, f) ->
-	(o) ->
-		satisfiesThrow o, spec
-		f o
+# class FuncError extends Error
+# 	constructor: (msg) ->
+# 		super msg
+# 		@name = 'FuncError'
+# 		Error.captureStackTrace this, FuncError
 
-func.loose = (spec, f) ->
-	(o) ->
-		satisfiesThrow o, spec, true
-		f o
+# export satisfiesThrow = (o, spec, loose) ->
+# 	res = satisfies o, spec, loose
+# 	if ! isEmpty res
+# 		console.error 'Erroneous data to func:', o
+# 		throw new FuncError sf0 res
+
+# export func = (spec, f) ->
+# 	(o) ->
+# 		satisfiesThrow o, spec
+# 		f o
+
+# func.loose = (spec, f) ->
+# 	(o) ->
+# 		satisfiesThrow o, spec, true
+# 		f o
 
 o =
 	a1:
-		b1: [:c1, :c2]
-		b2: [:c1, :c2]
+		b1: ['c1', 'c2']
+		b2: ['c1', 'c2']
 	a2:
-		b1: [:c1, :c2]
-		b2: [:c1, :c2]
+		b1: ['c1', 'c2']
+		b2: ['c1', 'c2']
 
 
 class Dotted
@@ -522,14 +526,6 @@ export isNilOrEmpty = anyPass [isNil, isEmpty]
 # ----------------------------------------------------------------------------------------------------------
 # DEV HELPERS (should't really be in ramda-extras but... laziness)
 # ----------------------------------------------------------------------------------------------------------
-_sify = (k, v) ->
-	if v == undefined then '__UNDEFINED__'
-	else if type(v) == 'Function' then '[Function]'
-	else if type(v) == 'AsyncFunction' then '[AsyncFunction]'
-	else v
-
-export sf0 = (o) -> JSON.stringify o, _sify, 0
-export sf2 = (o) -> JSON.stringify o, _sify, 2
 
 _q = (asStr, f) ->
 	if 'Function' != type(f) then return console.warn("q(q) should be called with function not #{f}")
