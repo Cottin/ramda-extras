@@ -1,5 +1,10 @@
 import _has from "ramda/es/has"; import _isEmpty from "ramda/es/isEmpty"; import _last from "ramda/es/last"; import _replace from "ramda/es/replace"; import _type from "ramda/es/type"; #auto_require: _esramda
 
+
+# RAMDA EXTRAS 2 is an attempt at starting to extract the things we need so that old ideas can be removed.
+# When there's time and motivation, continue this but everything work as normal anyway.
+
+
 _sify = (k, v) ->
 	if v == undefined then '__UNDEFINED__'
 	else if _type(v) == 'Function' then '[Function]'
