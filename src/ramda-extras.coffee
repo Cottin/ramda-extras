@@ -130,7 +130,8 @@ _change = (spec, a, undo, total, modify) ->
 				else newA[k] = newV
 			when 'Object'
 				if isNil a[k] then newA[k] = _resolveIfNeeded v
-				else if isEmpty v then newA[k] = v
+				else if isEmpty v
+					if type(newA[k]) != 'Object' then newA[k] = v else # do nothing
 				else
 					nested = true
 					if undo
@@ -178,7 +179,6 @@ export isAffected = (deps, total) ->
 			if 'Object' != type total[k] then return true # = total[k] changed, we're dep on ancestor
 			else if isAffected v, total[k] then return true
 		else
-			console.log 'total', total, 'deps', deps
 			throw new Error "#{v} of type #{type v} is not a valid dependency object"
 
 		# switch type v

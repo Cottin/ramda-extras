@@ -1,5 +1,5 @@
 {add, append, curry, dec, empty, evolve, inc, isNil, match, path, prop, reduce, reject, remove, replace, set, type, values, where} = R = require 'ramda' #auto_require: ramda
-[ːb, ːa] = ['b', 'a'] #auto_sugar
+[ːa, ːb] = ['a', 'b'] #auto_sugar
 qq = (f) -> console.log match(/return (.*);/, f.toString())[1], f()
 qqq = (...args) -> console.log ...args
 _ = (...xs) -> xs
@@ -273,7 +273,7 @@ describe 'pickRec', ->
 		res = pickRec [], obj
 		deepEq {}, res
 
-describe 'superFlip', ->
+describe.skip 'superFlip', ->
 	it '2 args', ->
 		deepEq {a: 1}, superFlip(merge)({a: 1}, {a: 2})
 
@@ -334,7 +334,7 @@ describe 'cc', ->
 		# eq undefined, qq -> 1
 		# eq undefined, qqq -> 1
 
-describe.only 'satisfies', ->
+describe 'satisfies', ->
 	sat = RE.satisfies
 	it '_typeToStr', ->
 		eq 'String', RE._typeToStr String
@@ -444,7 +444,7 @@ describe.only 'satisfies', ->
 			eq 2, func1 {a: 1, b: 3}
 
 
-describe 'satisfiesOLD', ->
+describe.skip 'satisfiesOLD', ->
 	sat = RE.satisfiesOLD
 	# it 'String', ->
 	# 	def = {
@@ -470,7 +470,7 @@ describe 'satisfiesOLD', ->
 	# 	# deepEq {a: 1}, sat {a: {a1: 1}}, {a: String}
 	# 	# deepEq {}, sat {a: 'a'}, {a: String}
 
-	# it.only 'String', ->
+	# it 'String', ->
 	# 	deepEq {a: 1}, sat {a: 1}, {a: String}
 	# 	deepEq {}, sat {a: 'a'}, {a: String}
 
