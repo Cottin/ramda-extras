@@ -190,8 +190,8 @@ export isAffected = (deps, total) ->
 
 	return false
 
-# Returns the asymetric difference between a and b
-# You can think of it as "what changes do I have to make to a in order to get b?"
+# Returns the asymetric difference between l and r
+# You can think of it as "what changes do I have to make to l in order to get r?"
 export diff = (l, r) ->
 	res = {}
 	allKeys = union keys(l), keys(r)
